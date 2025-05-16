@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\Admin\Auth\LoginController;
 
+<<<<<<< HEAD
 // Prikaz admin login forme (nije zaštićena)
 Route::get('admin/login', [LoginController::class, 'showLoginForm'])->name('admin.login');
 
@@ -23,4 +24,20 @@ Route::middleware('auth:admin')->group(function () {
     Route::get('admin/dashboard', function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
+=======
+Route::get('/', function () {
+    return view('welcome');
+});
+
+Route::middleware(['auth.custom'])->group(function () {
+    Route::get('/protected', function () {
+        return response()->json(['message' => 'Samo za autentifikovane korisnike!']);
+    });
+});
+
+Route::middleware(['auth.custom', 'role:admin'])->group(function () {
+    Route::get('/admin', function () {
+        return response()->json(['message' => 'Samo za admina!']);
+    });
+>>>>>>> 1f7d296 (Privremeni commit pre rebase)
 });
