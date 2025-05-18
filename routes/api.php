@@ -36,3 +36,37 @@ Route::apiResource('admins', AdminController::class);
 // Custom rute za specifične zahteve
 Route::get('reservations/search/{email}', [ReservationController::class, 'searchByEmail']);
 Route::post('reservations/{id}/status', [ReservationController::class, 'changeStatus']);
+
+// Otvorene rute za korisnike (bez autentifikacije)
+Route::group([], function () {
+    // Ruta za kreiranje rezervacije (s throttling zaštitom)
+    Route::post('reservations', [ReservationController::class, 'store'])->middleware('throttle:10,1'); // Dozvoljeno 10 zahtjeva po minuti
+
+    // Ruta za prikaz svih dostupnih vremenskih slotova
+    Route::get('timeslots', [TimeSlotController::class, 'index']);
+});
+
+// Ruta za prijavu administratora
+Route::post('admin/login', [AdminController::class, 'login']); // Prijava administratora
+
+// Ruta za odjavu administratora
+Route::post('admin/logout', [AdminController::class, 'logout'])->middleware('auth:sanctum'); // Odjava administratora
+
+// Zaštićene rute za administratore (autentifikacija i provjera uloge)
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    // Upravljanje vremenskim slotovima (osim prikaza)
+    Route::apiResource('timeslots', TimeSlotController::class)->except(['index']);
+
+    // Upravljanje rezervacijama (pregled i brisanje)
+    Route::apiResource('reservations', ReservationController::class)->only(['index', 'show', 'destroy']);
+
+    // Upravljanje adminima
+    Route::apiResource('admins', AdminController::class);
+
+    // (Opcionalno) Upravljanje tipovima vozila (VehicleType)
+    Route::apiResource('vehicle-types', VehicleTypeController::class)->except(['index', 'show']);
+
+    // Custom ruta za promjenu statusa rezervacije
+    Route::patch('reservations/{id}/status', [ReservationController::class, 'updateStatus']);
+});
+
