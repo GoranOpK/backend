@@ -30,14 +30,15 @@ class Kernel extends HttpKernel
      * @var array<string, array<int, class-string|string>>
      */
     protected $middlewareGroups = [
-        'web' => [
-            \App\Http\Middleware\EncryptCookies::class, // Šifrovanje kolačića
-            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class, // Dodavanje kolačića u odgovor
-            \Illuminate\Session\Middleware\StartSession::class, // Pokretanje sesije
-            \Illuminate\View\Middleware\ShareErrorsFromSession::class, // Dijeljenje grešaka iz sesije
-            \App\Http\Middleware\VerifyCsrfToken::class, // CSRF zaštita za web zahtjeve
-            \Illuminate\Routing\Middleware\SubstituteBindings::class, // Zamjena parametara ruta
-        ],
+    'web' => [
+        \App\Http\Middleware\EncryptCookies::class,
+        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+        \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        \App\Http\Middleware\VerifyCsrfToken::class,
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,
+    ],
+];
 
         'api' => [
             'throttle:api', // Ograničenje broja zahtjeva po API korisniku

@@ -25,3 +25,15 @@ Route::middleware('auth:admin')->group(function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
 });
+
+// Rute za testiranje CSRF zaštite
+
+// Ruta sa CSRF zaštitom, ali bez tokena u testu
+Route::post('/ruta-bez-tokena', function () {
+    return response()->json(['message' => 'Zahtjev bez CSRF tokena'], 200);
+})->middleware('web'); // `web` middleware uključuje CSRF zaštitu
+
+// Ruta sa CSRF zaštitom i validnim tokenom
+Route::post('/ruta-sa-tokenom', function () {
+    return response()->json(['message' => 'Zahtjev sa CSRF tokenom'], 200);
+})->middleware('web');
