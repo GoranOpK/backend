@@ -50,10 +50,6 @@ jobs:
         run: echo APP_KEY=${{ secrets.APP_KEY }} >> .env
         # Dodaje APP_KEY iz GitHub Secrets u `.env` fajl.
 
-      - name: Generate app key
-        run: php artisan key:generate
-        # Generiše sigurnosni ključ aplikacije (`APP_KEY`).
-
       - name: Run Migrations
         run: php artisan migrate --force --no-interaction
         # Pokreće migracije kako bi se baza podataka kreirala ili ažurirala.
