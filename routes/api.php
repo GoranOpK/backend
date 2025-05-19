@@ -6,7 +6,8 @@ use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\VehicleTypeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\SystemConfigController;
-use App\Http\Controllers\ExampleController; // Dodavanje ExampleController-a
+use App\Http\Controllers\ExampleController;
+use App\Http\Controllers\MailController; // Dodavanje MailController-a
 
 // Javne rute za korisnike (bez logovanja)
 Route::group([], function () {
@@ -48,5 +49,16 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 Route::post('admin/login', [AdminController::class, 'login']); // Prijava administratora
 Route::post('admin/logout', [AdminController::class, 'logout'])->middleware('auth:sanctum'); // Odjava administratora
 
-// Dodavanje rute za ExampleController
-Route::apiResource('examples', ExampleController::class); // RESTful rute za ExampleController
+// RESTful rute za ExampleController
+Route::apiResource('examples', ExampleController::class); // Dodavanje punih RESTful ruta za ExampleController
+
+// Rute za slanje email-a
+Route::group([], function () {
+    // Ruta za slanje potvrde o plaćanju
+    Route::post('send-payment-confirmation', [MailController::class, 'sendPaymentConfirmation'])
+        ->name('api.mail.payment-confirmation');
+
+    // Ruta za slanje potvrde o rezervaciji
+    Route::post('send-reservation-confirmation', [MailController::class, 'sendReservationConfirmation'])
+        ->name('api.mail.reservation-confirmation');
+});

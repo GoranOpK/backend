@@ -2,75 +2,52 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\Auth\LoginController;
-<<<<<<< HEAD
 use App\Http\Controllers\ReportController;
-
-// Početna stranica
-=======
+use App\Http\Controllers\PaymentController;
 
 // Početna stranica (dostupna svima)
->>>>>>> e1f3c705f8aa549936aa9cbd8331e51f8b05d0c2
 Route::get('/', function () {
     return view('welcome');
 });
 
-<<<<<<< HEAD
-// Admin rute
+// Rute za administraciju
 Route::prefix('admin')->name('admin.')->group(function () {
-    // Login
+
+    // Login za admina
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
+
+    // Login zahtjev sa zaštitom od brute-force napada (throttle)
     Route::post('login', [LoginController::class, 'login'])
         ->name('login.submit')
         ->middleware('throttle:5,1');
 
-    // Zaštićene admin rute
+    // Zaštićene admin rute (samo za autentifikovane administratore)
     Route::middleware('auth:admin')->group(function () {
+
+        // Logout za admina
         Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+
+        // Dashboard za admina
         Route::get('dashboard', function () {
             return view('admin.dashboard');
         })->name('dashboard');
     });
 });
 
-// Izvještaj
-Route::get('/izvjestaj', [ReportController::class, 'generate']);
-
-// Test POST rute (CSRF zaštita je podrazumevana u web.php)
-Route::post('/ruta-bez-tokena', function () {
-    return response()->json(['message' => 'Zahtjev bez CSRF tokena'], 200);
-});
-
-Route::post('/ruta-sa-tokenom', function () {
-    return response()->json(['message' => 'Zahtjev sa CSRF tokenom'], 200);
-});
-=======
-// Rute za admin login (nije zaštićeno)
-Route::get('admin/login', [LoginController::class, 'showLoginForm'])->name('admin.login');
-Route::post('admin/login', [LoginController::class, 'login'])
-    ->name('admin.login.submit')
-    ->middleware('throttle:5,1'); // Dodata zaštita od brute-force napada
-
-// Rute dostupne samo autentifikovanim adminima
-Route::middleware('auth:admin')->group(function () {
-
-    // Admin logout ruta
-    Route::post('admin/logout', [LoginController::class, 'logout'])->name('admin.logout');
-
-    // Admin dashboard
-    Route::get('admin/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
-});
+// Ruta za generisanje izvještaja
+Route::get('/izvjestaj', [ReportController::class, 'generate'])->name('izvjestaj');
 
 // Rute za testiranje CSRF zaštite
 
-// Ruta sa CSRF zaštitom, ali bez tokena u testu
+// Ruta bez CSRF tokena (za testiranje)
 Route::post('/ruta-bez-tokena', function () {
     return response()->json(['message' => 'Zahtjev bez CSRF tokena'], 200);
-})->middleware('web'); // `web` middleware uključuje CSRF zaštitu
+});
 
-// Ruta sa CSRF zaštitom i validnim tokenom
+// Ruta sa CSRF tokenom (za testiranje)
 Route::post('/ruta-sa-tokenom', function () {
     return response()->json(['message' => 'Zahtjev sa CSRF tokenom'], 200);
 })->middleware('web');
->>>>>>> e1f3c705f8aa549936aa9cbd8331e51f8b05d0c2
+
+// Ruta za unos email adrese za potvrdu plaćanja
+Route::post('/send-confirmation', [PaymentController::class, 'sendConfirmation'])->name('payment.confirmation');

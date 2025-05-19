@@ -4,8 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-<<<<<<< HEAD
-    "content-hash": "ccead4f10ab7dc304be9d17e162b0358",
+    "content-hash": "85a1d7c28e841a6f1d9b25aceb34afec",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -85,11 +84,6 @@
             "time": "2025-02-13T15:07:54+00:00"
         },
         {
-=======
-    "content-hash": "cfd7f3f919d0a01dfba98c5c499a43c9",
-    "packages": [
-        {
->>>>>>> e1f3c705f8aa549936aa9cbd8331e51f8b05d0c2
             "name": "brick/math",
             "version": "0.12.3",
             "source": {
@@ -619,7 +613,6 @@
             "time": "2024-02-05T11:56:58+00:00"
         },
         {
-<<<<<<< HEAD
             "name": "dompdf/dompdf",
             "version": "v3.1.0",
             "source": {
@@ -775,8 +768,6 @@
             "time": "2024-04-29T13:26:35+00:00"
         },
         {
-=======
->>>>>>> e1f3c705f8aa549936aa9cbd8331e51f8b05d0c2
             "name": "dragonmantank/cron-expression",
             "version": "v3.4.0",
             "source": {
@@ -1918,6 +1909,69 @@
             "time": "2025-01-27T14:24:01+00:00"
         },
         {
+            "name": "laravel/ui",
+            "version": "v4.6.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laravel/ui.git",
+                "reference": "7d6ffa38d79f19c9b3e70a751a9af845e8f41d88"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laravel/ui/zipball/7d6ffa38d79f19c9b3e70a751a9af845e8f41d88",
+                "reference": "7d6ffa38d79f19c9b3e70a751a9af845e8f41d88",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/console": "^9.21|^10.0|^11.0|^12.0",
+                "illuminate/filesystem": "^9.21|^10.0|^11.0|^12.0",
+                "illuminate/support": "^9.21|^10.0|^11.0|^12.0",
+                "illuminate/validation": "^9.21|^10.0|^11.0|^12.0",
+                "php": "^8.0",
+                "symfony/console": "^6.0|^7.0"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^7.35|^8.15|^9.0|^10.0",
+                "phpunit/phpunit": "^9.3|^10.4|^11.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Laravel\\Ui\\UiServiceProvider"
+                    ]
+                },
+                "branch-alias": {
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Laravel\\Ui\\": "src/",
+                    "Illuminate\\Foundation\\Auth\\": "auth-backend/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "Laravel UI utilities and presets.",
+            "keywords": [
+                "laravel",
+                "ui"
+            ],
+            "support": {
+                "source": "https://github.com/laravel/ui/tree/v4.6.1"
+            },
+            "time": "2025-01-28T15:15:29+00:00"
+        },
+        {
             "name": "league/commonmark",
             "version": "2.7.0",
             "source": {
@@ -2469,7 +2523,6 @@
             "time": "2024-12-08T08:18:47+00:00"
         },
         {
-<<<<<<< HEAD
             "name": "masterminds/html5",
             "version": "2.9.0",
             "source": {
@@ -2537,8 +2590,6 @@
             "time": "2024-03-31T07:05:07+00:00"
         },
         {
-=======
->>>>>>> e1f3c705f8aa549936aa9cbd8331e51f8b05d0c2
             "name": "monolog/monolog",
             "version": "3.9.0",
             "source": {
@@ -3868,7 +3919,6 @@
             "time": "2024-04-27T21:32:50+00:00"
         },
         {
-<<<<<<< HEAD
             "name": "sabberworm/php-css-parser",
             "version": "v8.8.0",
             "source": {
@@ -3934,8 +3984,6 @@
             "time": "2025-03-23T17:59:05+00:00"
         },
         {
-=======
->>>>>>> e1f3c705f8aa549936aa9cbd8331e51f8b05d0c2
             "name": "swagger-api/swagger-ui",
             "version": "v5.21.0",
             "source": {
@@ -8797,7 +8845,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.2"
+        "php": "^8.4"
     },
     "platform-dev": {},
     "plugin-api-version": "2.6.0"
