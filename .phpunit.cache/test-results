@@ -1,0 +1,1 @@
+{"version":1,"defects":[],"times":{"Tests\\Feature\\CsrfProtectionTest::testPostRouteWithoutCsrfToken":0.043,"Tests\\Feature\\CsrfProtectionTest::testPostRouteWithCsrfToken":0.02,"Tests\\Feature\\ExampleTest::testApplicationReturnsSuccessfulResponse":0.025,"Tests\\Unit\\ExampleTest::test_that_true_is_true":0}}
