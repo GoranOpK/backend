@@ -1,5 +1,7 @@
+# Naziv workflow-a
 name: Laravel CI/CD
 
+# Definiše kada se workflow pokreće
 on:
   push:
     branches:
@@ -8,32 +10,32 @@ on:
     branches:
       - main # Workflow se pokreće kada se otvori pull request koji cilja granu "main".
 
+# Poslovi koji se izvršavaju unutar workflow-a
 jobs:
   laravel-tests:
-    name: Run Laravel Tests # Naziv posla koji se izvršava unutar workflow-a.
-    runs-on: ubuntu-latest # Workflow se izvršava na najnovijoj verziji Ubuntu operativnog sistema.
+    name: Run Laravel Tests # Naziv posla koji se izvršava.
+    runs-on: ubuntu-latest # Workflow se izvršava na najnovijoj verziji Ubuntu sistema.
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-        # Ovaj korak preuzima kod iz repozitorijuma kako bi bio dostupan za dalju obradu.
+        # Preuzima kod iz repozitorijuma kako bi bio dostupan za dalje korake.
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4' # Postavlja se verzija PHP-a koja će se koristiti (u ovom slučaju 8.4).
+          php-version: '8.3' # Verzija PHP-a koja se koristi.
           extensions: mbstring, bcmath, intl, pdo, pdo_mysql
-          # Instaliraju se potrebne PHP ekstenzije koje aplikacija zahtijeva.
+          # Instaliraju se potrebne PHP ekstenzije za aplikaciju.
           ini-values: |
             post_max_size=256M
             upload_max_filesize=256M
-          # Podešavaju se PHP ini vrijednosti kao što su maksimalna veličina fajlova za upload.
-          coverage: none # Pokrivenost koda nije uključena.
-          tools: composer # Instalira se Composer kao dodatni alat.
+          # Podešavaju se PHP ini parametri za aplikaciju.
+          tools: composer # Instalira se Composer kao alat za upravljanje PHP zavisnostima.
 
       - name: Install Composer Dependencies
         run: composer install --no-progress --no-suggest --prefer-dist
-        # Instaliraju se zavisnosti definisane u `composer.json` fajlu.
+        # Instalira sve zavisnosti navedene u `composer.json` fajlu.
 
       - name: Copy environment file
         run: |
@@ -42,16 +44,22 @@ jobs:
           else
             echo "No .env.example file found. Skipping.";
           fi
-        # Ako postoji `.env.example` fajl, kopira se kao `.env`. Ako ne postoji, preskače se korak.
+        # Provjerava da li postoji `.env.example` fajl i kopira ga kao `.env`.
+
+      - name: Set environment variables
+        run: |
+          echo DB_USERNAME=${{ secrets.DB_USERNAME }} >> .env
+          echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} >> .env
+        # Dodaje osjetljive podatke (poput korisničkog imena i lozinke za bazu) u `.env` fajl pomoću GitHub Secrets.
 
       - name: Generate app key
         run: php artisan key:generate
-        # Generiše se sigurnosni ključ aplikacije i dodaje u `.env` fajl.
+        # Generiše sigurnosni ključ aplikacije (`APP_KEY`).
 
       - name: Run Migrations
         run: php artisan migrate --force --no-interaction
-        # Pokreću se migracije kako bi se kreirala ili ažurirala baza podataka.
+        # Pokreće migracije kako bi se baza podataka kreirala ili ažurirala.
 
       - name: Run Tests
         run: php artisan test
-        # Pokreću se testovi aplikacije definisani u Laravel projektu.
+        # Pokreće testove definisane u Laravel aplikaciji kako bi se provjerila ispravnost funkcionalnosti.
