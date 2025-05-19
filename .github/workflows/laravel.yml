@@ -1,64 +1,56 @@
 name: Laravel CI/CD
 
-# Ovaj workflow se pokreće na promjene u glavnoj grani (main)
-# ili kada se otvori pull request prema glavnoj grani.
 on:
   push:
     branches:
-      - main # Pokreće workflow kada se promjene push-uju u granu main.
+      - main # Workflow se pokreće kada se izvrši push u granu "main".
   pull_request:
     branches:
-      - main # Pokreće workflow na pull requestove prema grani main.
+      - main # Workflow se pokreće kada se otvori pull request koji cilja granu "main".
 
 jobs:
   laravel-tests:
-    name: Run Laravel Tests # Ime posla koji se pokreće.
-    runs-on: ubuntu-latest # Koristi najnoviju verziju Ubuntu virtuelne mašine.
+    name: Run Laravel Tests # Naziv posla koji se izvršava unutar workflow-a.
+    runs-on: ubuntu-latest # Workflow se izvršava na najnovijoj verziji Ubuntu operativnog sistema.
 
     steps:
-      # Korak 1: Preuzimanje koda iz repozitorijuma.
       - name: Checkout Code
         uses: actions/checkout@v3
-        # Automatski klonira repozitorijum na runner mašinu.
+        # Ovaj korak preuzima kod iz repozitorijuma kako bi bio dostupan za dalju obradu.
 
-      # Korak 2: Postavljanje PHP okruženja.
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3' # Verzija PHP-a koja se koristi.
-          extensions: mbstring, bcmath, intl, pdo, pdo_mysql # PHP ekstenzije potrebne za Laravel.
+          php-version: '8.4' # Postavlja se verzija PHP-a koja će se koristiti (u ovom slučaju 8.4).
+          extensions: mbstring, bcmath, intl, pdo, pdo_mysql
+          # Instaliraju se potrebne PHP ekstenzije koje aplikacija zahtijeva.
           ini-values: |
             post_max_size=256M
             upload_max_filesize=256M
-          coverage: none # Onemogućava generisanje pokrivenosti (coverage).
-          tools: composer # Instalira Composer za upravljanje zavisnostima.
+          # Podešavaju se PHP ini vrijednosti kao što su maksimalna veličina fajlova za upload.
+          coverage: none # Pokrivenost koda nije uključena.
+          tools: composer # Instalira se Composer kao dodatni alat.
 
-      # Korak 3: Instalacija Composer zavisnosti.
       - name: Install Composer Dependencies
         run: composer install --no-progress --no-suggest --prefer-dist
-        # Instalira sve zavisnosti definisane u composer.json fajlu.
+        # Instaliraju se zavisnosti definisane u `composer.json` fajlu.
 
-      # Korak 4: Kopiranje environment fajla.
       - name: Copy environment file
         run: |
           if [ -f .env.example ]; then
             cp .env.example .env
           else
             echo "No .env.example file found. Skipping."
-          fi
-        # Provjerava da li postoji .env.example fajl i kopira ga u .env.
+        # Ako postoji `.env.example` fajl, kopira se kao `.env`. Ako ne postoji, preskače se korak.
 
-      # Korak 5: Generisanje Laravel ključa.
       - name: Generate app key
         run: php artisan key:generate
-        # Generiše aplikacioni ključ koristeći Laravel Artisan komandu.
+        # Generiše se sigurnosni ključ aplikacije i dodaje u `.env` fajl.
 
-      # Korak 6: Pokretanje migracija.
       - name: Run Migrations
         run: php artisan migrate --force --no-interaction
-        # Pokreće migracije bez interakcije.
+        # Pokreću se migracije kako bi se kreirala ili ažurirala baza podataka.
 
-      # Korak 7: Pokretanje testova.
       - name: Run Tests
         run: php artisan test
-        # Pokreće sve testove definisane za Laravel aplikaciju.
+        # Pokreću se testovi aplikacije definisani u Laravel projektu.
