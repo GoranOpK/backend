@@ -38,9 +38,10 @@ jobs:
       - name: Copy environment file
         run: |
           if [ -f .env.example ]; then
-            cp .env.example .env
+            cp .env.example .env;
           else
-            echo "No .env.example file found. Skipping."
+            echo "No .env.example file found. Skipping.";
+          fi
         # Ako postoji `.env.example` fajl, kopira se kao `.env`. Ako ne postoji, preskače se korak.
 
       - name: Generate app key
