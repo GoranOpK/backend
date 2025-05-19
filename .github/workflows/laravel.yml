@@ -24,7 +24,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3' # Verzija PHP-a koja se koristi.
+          php-version: '8.3' # Stabilna verzija PHP-a za Laravel.
           extensions: mbstring, bcmath, intl, pdo, pdo_mysql
           # Instaliraju se potrebne PHP ekstenzije za aplikaciju.
           ini-values: |
@@ -37,6 +37,15 @@ jobs:
         run: composer install --no-progress --no-suggest --prefer-dist
         # Instalira sve zavisnosti navedene u `composer.json` fajlu.
 
+      - name: Set up storage and permissions
+        run: |
+          mkdir -p storage/framework/cache
+          mkdir -p storage/framework/sessions
+          mkdir -p storage/framework/views
+          chmod -R 775 storage
+          chmod -R 775 bootstrap/cache
+        # Kreira potrebne direktorijume i postavlja dozvole.
+
       - name: Copy environment file
         run: |
           if [ -f .env.example ]; then
@@ -46,9 +55,16 @@ jobs:
           fi
         # Provjerava da li postoji `.env.example` fajl i kopira ga kao `.env`.
 
-      - name: Set APP_KEY
-        run: echo APP_KEY=${{ secrets.APP_KEY }} >> .env
-        # Dodaje APP_KEY iz GitHub Secrets u `.env` fajl.
+      - name: Generate app key
+        run: php artisan key:generate
+        # Generiše APP_KEY za aplikaciju.
+
+      - name: Setup Database
+        run: |
+          touch database/database.sqlite
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=/home/runner/work/backend/backend/database/database.sqlite" >> .env
+        # Postavlja SQLite bazu podataka za testiranje.
 
       - name: Run Migrations
         run: php artisan migrate --force --no-interaction
