@@ -16,6 +16,10 @@ class ExampleTest extends TestCase
 
     public function testApplicationReturnsSuccessfulResponse()
     {
-        // Vaš test kod ovdje
+        // Simulira GET zahtjev na početnu rutu
+        $response = $this->get('/');
+
+        // Provjerava da li je status odgovora 200 (uspješno)
+        $response->assertStatus(200);
     }
 }
