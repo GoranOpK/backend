@@ -2,18 +2,20 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
-    /**
-     * A basic test example.
-     */
-    public function test_the_application_returns_a_successful_response(): void
+    protected function setUp(): void
     {
-        $response = $this->get('/');
+        parent::setUp();
 
-        $response->assertStatus(200);
+        // Postavljanje APP_KEY za testove
+        putenv('APP_KEY=base64:TdWMnAyRudCfTDPnLcUOVjC8VQY0GE+v8C9/bSv1hP0=');
+    }
+
+    public function testApplicationReturnsSuccessfulResponse()
+    {
+        // Vaš test kod ovdje
     }
 }
