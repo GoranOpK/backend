@@ -4,6 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
+<<<<<<< HEAD
     "content-hash": "ccead4f10ab7dc304be9d17e162b0358",
     "packages": [
         {
@@ -84,6 +85,11 @@
             "time": "2025-02-13T15:07:54+00:00"
         },
         {
+=======
+    "content-hash": "cfd7f3f919d0a01dfba98c5c499a43c9",
+    "packages": [
+        {
+>>>>>>> e1f3c705f8aa549936aa9cbd8331e51f8b05d0c2
             "name": "brick/math",
             "version": "0.12.3",
             "source": {
@@ -613,6 +619,7 @@
             "time": "2024-02-05T11:56:58+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "dompdf/dompdf",
             "version": "v3.1.0",
             "source": {
@@ -768,6 +775,8 @@
             "time": "2024-04-29T13:26:35+00:00"
         },
         {
+=======
+>>>>>>> e1f3c705f8aa549936aa9cbd8331e51f8b05d0c2
             "name": "dragonmantank/cron-expression",
             "version": "v3.4.0",
             "source": {
@@ -2460,6 +2469,7 @@
             "time": "2024-12-08T08:18:47+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "masterminds/html5",
             "version": "2.9.0",
             "source": {
@@ -2527,6 +2537,8 @@
             "time": "2024-03-31T07:05:07+00:00"
         },
         {
+=======
+>>>>>>> e1f3c705f8aa549936aa9cbd8331e51f8b05d0c2
             "name": "monolog/monolog",
             "version": "3.9.0",
             "source": {
@@ -3856,6 +3868,7 @@
             "time": "2024-04-27T21:32:50+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "sabberworm/php-css-parser",
             "version": "v8.8.0",
             "source": {
@@ -3921,6 +3934,8 @@
             "time": "2025-03-23T17:59:05+00:00"
         },
         {
+=======
+>>>>>>> e1f3c705f8aa549936aa9cbd8331e51f8b05d0c2
             "name": "swagger-api/swagger-ui",
             "version": "v5.21.0",
             "source": {
