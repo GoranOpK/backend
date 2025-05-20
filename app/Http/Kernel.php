@@ -30,15 +30,14 @@ class Kernel extends HttpKernel
      * @var array<string, array<int, class-string|string>>
      */
     protected $middlewareGroups = [
-    'web' => [
-        \App\Http\Middleware\EncryptCookies::class,
-        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-        \Illuminate\Session\Middleware\StartSession::class,
-        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-        \App\Http\Middleware\VerifyCsrfToken::class,
-        \Illuminate\Routing\Middleware\SubstituteBindings::class,
-    ],
-];
+        'web' => [
+            \App\Http\Middleware\EncryptCookies::class, // Šifrovanje kolačića
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class, // Dodavanje kolačića u odgovor
+            \Illuminate\Session\Middleware\StartSession::class, // Pokretanje sesije za korisnika
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class, // Dijeljenje grešaka iz sesije u pregledima
+            \App\Http\Middleware\VerifyCsrfToken::class, // Provjera CSRF tokena za sigurnost
+            \Illuminate\Routing\Middleware\SubstituteBindings::class, // Zamjena parametara ruta
+        ],
 
         'api' => [
             'throttle:api', // Ograničenje broja zahtjeva po API korisniku
@@ -69,6 +68,6 @@ class Kernel extends HttpKernel
         'admin' => \App\Http\Middleware\AuthorizeAdmin::class, // Provjera da li je korisnik administrator
 
         // Prilagođeni middleware za provjeru uloga
-    'role' => \App\Http\Middleware\AuthorizeRole::class, // Dodato za proveru uloga
+        'role' => \App\Http\Middleware\AuthorizeRole::class, // Dodato za provjeru uloga
     ];
 }
