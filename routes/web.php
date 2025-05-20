@@ -54,8 +54,9 @@ Route::middleware(['web'])->post('/ruta-bez-tokena', function () {
 
 Route::post('/ruta-bez-tokena', function () {
     // Prikazuje sve podatke iz tela zahteva i zaglavlja
-    dd(request()->all(), request()->header());
-});
+    // dd(request()->all(), request()->header());
+    return response()->json(['message' => 'Zahtjev bez CSRF tokenom'], 419);
+})->middleware('web');
 
 // Ruta sa CSRF tokenom (za testiranje)
 Route::post('/ruta-sa-tokenom', function () {
