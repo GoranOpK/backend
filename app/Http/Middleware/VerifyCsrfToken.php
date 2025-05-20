@@ -12,6 +12,6 @@ class VerifyCsrfToken extends Middleware
      * @var array
      */
     protected $except = [
-        // Dodajte rute koje želite izuzeti, ako ih ima
+    
     ];
 }
