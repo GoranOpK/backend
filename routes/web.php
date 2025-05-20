@@ -52,10 +52,28 @@ Route::middleware(['web'])->post('/ruta-bez-tokena', function () {
     return response()->json(['message' => 'Zahtjev bez CSRF tokena']);
 });
 
+Route::post('/ruta-bez-tokena', function () {
+    // Prikazuje sve podatke iz tela zahteva i zaglavlja
+    dd(request()->all(), request()->header());
+});
+
 // Ruta sa CSRF tokenom (za testiranje)
 Route::post('/ruta-sa-tokenom', function () {
     return response()->json(['message' => 'Zahtjev sa CSRF tokenom'], 200);
 })->middleware('web');
+
+Route::get('/test-encrypt-cookie', function () {
+    // Postavlja kolačić
+    cookie()->queue(cookie('test_cookie', 'test_value', 10)); // 10 minuta trajanja
+
+    return response()->json(['message' => 'Cookie set!']);
+});
+
+Route::get('/test-decrypt-cookie', function () {
+    // Dohvata kolačić
+    $cookieValue = request()->cookie('test_cookie');
+    return response()->json(['cookie_value' => $cookieValue]);
+});
 
 // Ruta za slanje email adrese za potvrdu plaćanja
 Route::post('/send-confirmation', [PaymentController::class, 'sendConfirmation'])->name('payment.confirmation');
