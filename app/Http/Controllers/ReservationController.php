@@ -10,43 +10,51 @@ class ReservationController extends Controller
     /**
      * Prikazuje sve rezervacije.
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index()
     {
-        return Reservation::all();
+        $reservations = Reservation::all();
+        return response()->json($reservations, 200);
     }
 
     /**
      * Prikazuje pojedinačnu rezervaciju na osnovu ID-a.
      *
      * @param int $id
-     * @return \App\Models\Reservation
+     * @return \Illuminate\Http\JsonResponse
      */
     public function show($id)
     {
-        return Reservation::findOrFail($id);
+        $reservation = Reservation::findOrFail($id);
+        return response()->json($reservation, 200);
     }
 
     /**
      * Kreira novu rezervaciju.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \App\Models\Reservation
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'time_slot_id' => 'required|integer',
+            'time_slot_id' => 'required|integer|exists:time_slots,id',
             'reservation_date' => 'required|date',
-            'user_name' => 'required|string',
-            'country' => 'required|string',
-            'license_plate' => 'required|string',
-            'vehicle_type_id' => 'required|integer',
-            'email' => 'required|email',
-            'status' => 'required',
+            'user_name' => 'required|string|max:255',
+            'country' => 'required|string|max:100',
+            'license_plate' => 'required|string|max:20',
+            'vehicle_type_id' => 'required|integer|exists:vehicle_types,id',
+            'email' => 'required|email|max:255',
+            'status' => 'required|string|in:pending,confirmed,canceled',
         ]);
-        return Reservation::create($validated);
+
+        $reservation = Reservation::create($validated);
+
+        return response()->json([
+            'message' => 'Reservation created successfully',
+            'reservation' => $reservation,
+        ], 201);
     }
 
     /**
@@ -54,13 +62,29 @@ class ReservationController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param int $id
-     * @return \App\Models\Reservation
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, $id)
     {
         $reservation = Reservation::findOrFail($id);
-        $reservation->update($request->all());
-        return $reservation;
+
+        $validated = $request->validate([
+            'time_slot_id' => 'sometimes|required|integer|exists:time_slots,id',
+            'reservation_date' => 'sometimes|required|date',
+            'user_name' => 'sometimes|required|string|max:255',
+            'country' => 'sometimes|required|string|max:100',
+            'license_plate' => 'sometimes|required|string|max:20',
+            'vehicle_type_id' => 'sometimes|required|integer|exists:vehicle_types,id',
+            'email' => 'sometimes|required|email|max:255',
+            'status' => 'sometimes|required|string|in:pending,confirmed,canceled',
+        ]);
+
+        $reservation->update($validated);
+
+        return response()->json([
+            'message' => 'Reservation updated successfully',
+            'reservation' => $reservation,
+        ], 200);
     }
 
     /**
@@ -73,6 +97,7 @@ class ReservationController extends Controller
     {
         $reservation = Reservation::findOrFail($id);
         $reservation->delete();
-        return response()->json(['message' => 'Deleted']);
+
+        return response()->json(['message' => 'Reservation deleted successfully'], 200);
     }
 }

@@ -1,6 +1,6 @@
 # Laravel specific files and directories to ignore
 .env
-.env.*
+#.env.*
 /vendor
 /node_modules
 /storage/*.key

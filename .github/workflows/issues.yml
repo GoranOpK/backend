@@ -1,12 +1,16 @@
 name: Issues
 
+# Ovaj workflow se pokreće kada se problem (issue) označi određenom etiketom.
 on:
   issues:
-    types: [labeled]
+    types:
+      - labeled # Aktivira workflow kada se doda nova etiketa na problem.
 
 permissions:
-  issues: write
+  issues: write # Omogućava workflow-u da piše izmjene na nivou problema (issues).
 
 jobs:
   help-wanted:
+    name: Process Help Wanted Label # Naziv posla.
     uses: laravel/.github/.github/workflows/issues.yml@main
+    # Workflow ponovo koristi udaljeni workflow definisan u Laravel repozitorijumu.

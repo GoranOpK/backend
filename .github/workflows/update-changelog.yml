@@ -1,13 +1,18 @@
 name: Update Changelog
 
+# Ovaj workflow se pokreće kada se objavi nova verzija (release).
 on:
   release:
-    types: [released]
+    types:
+      - released # Aktivira workflow samo na događaj "released".
 
-permissions: {}
+permissions: {} # Workflow nema početne dozvole.
 
 jobs:
   update:
+    name: Update Changelog File # Naziv posla.
     permissions:
-      contents: write
+      contents: write # Omogućava zapisivanje sadržaja u repozitorijum.
+
     uses: laravel/.github/.github/workflows/update-changelog.yml@main
+    # Ponovno koristi workflow iz Laravel-ovog udaljenog repozitorijuma.

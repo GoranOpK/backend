@@ -8,13 +8,13 @@ use Illuminate\Http\Request;
 class TimeSlotController extends Controller
 {
     /**
-     * Prikazuje sve vremenske slotove.
+     * Prikazuje sve vremenske slotove sa paginacijom.
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function index()
     {
-        return TimeSlot::all();
+        return TimeSlot::paginate(10); // Vraća po 10 slotova po stranici
     }
 
     /**
@@ -37,10 +37,10 @@ class TimeSlotController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'start_time' => 'required',
-            'end_time' => 'required',
-            'type' => 'required',
-            'status' => 'required',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            'type' => 'required|string|max:255',
+            'status' => 'required|in:available,booked,canceled',
         ]);
         return TimeSlot::create($validated);
     }
@@ -55,7 +55,15 @@ class TimeSlotController extends Controller
     public function update(Request $request, $id)
     {
         $slot = TimeSlot::findOrFail($id);
-        $slot->update($request->all());
+
+        $validated = $request->validate([
+            'start_time' => 'sometimes|required|date_format:H:i',
+            'end_time' => 'sometimes|required|date_format:H:i|after:start_time',
+            'type' => 'sometimes|required|string|max:255',
+            'status' => 'sometimes|required|in:available,booked,canceled',
+        ]);
+
+        $slot->update($validated);
         return $slot;
     }
 

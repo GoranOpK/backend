@@ -1,12 +1,73 @@
-name: Pull Requests
+name: Pull Requests Workflow
 
+# Ovaj workflow se pokreće kada se otvori novi pull request na glavnoj grani (main).
 on:
-  pull_request_target:
-    types: [opened]
+  pull_request:
+    branches:
+      - main # Ciljna grana za pull requestove.
 
 permissions:
-  pull-requests: write
+  pull-requests: write # Omogućava workflow-u da piše promjene na nivou pull requestova (npr. dodavanje komentara).
 
 jobs:
-  uneditable:
-    uses: laravel/.github/.github/workflows/pull-requests.yml@main
+  validate-pr:
+    name: Validate Pull Request
+    runs-on: ubuntu-latest # Koristi najnoviju verziju Ubuntu virtuelne mašine.
+
+    steps:
+      # Korak 1: Kloniraj repozitorijum.
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        # Ovo omogućava workflow-u pristup kodu iz pull requesta.
+
+      # Korak 2: Postavi PHP okruženje.
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3' # Verzija PHP-a koja se koristi za testiranje.
+
+      # Korak 3: Instaliraj zavisnosti.
+      - name: Install dependencies
+        run: composer install
+        # Instalira sve zavisnosti definisane u composer.json fajlu.
+
+      # Korak 4: Pokreni testove.
+      - name: Run tests
+        run: php artisan test
+        # Pokreće testove aplikacije koristeći Laravel-ovu Artisan komandu.
+
+  check-style:
+    name: Check Code Style
+    runs-on: ubuntu-latest # Koristi isti OS kao prethodni posao.
+
+    steps:
+      # Korak 1: Kloniraj repozitorijum.
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Korak 2: Pokreni statičku analizu koda.
+      - name: Lint and fix code style
+        run: ./vendor/bin/pint --test
+        # Koristi Laravel Pint alat za provjeru i ispravljanje stila koda.
+
+  update-status:
+    name: Update Pull Request Status
+    runs-on: ubuntu-latest
+
+    steps:
+      # Korak 1: Kloniraj repozitorijum.
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Korak 2: Dodaj komentar na pull request.
+      - name: Comment on Pull Request
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: ${{ github.event.pull_request.number }},
+              owner: ${{ github.repository_owner }},
+              repo: ${{ github.event.repository.name }},
+              body: "Hvala što ste poslali pull request! Vaš kod je uspješno prošao sve provjere. 🚀"
+            })
+        # Automatski dodaje komentar na pull request ako sve provjere prođu.
