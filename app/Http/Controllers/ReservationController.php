@@ -100,4 +100,11 @@ class ReservationController extends Controller
 
         return response()->json(['message' => 'Reservation deleted successfully'], 200);
     }
+
+    public function byDate(Request $request)
+    {
+        $date = $request->query('date');
+        $reservations = Reservation::whereDate('reservation_date', $date)->get();
+        return response()->json($reservations);
+    }
 }

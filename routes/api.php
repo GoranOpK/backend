@@ -62,3 +62,5 @@ Route::group([], function () {
     Route::post('send-reservation-confirmation', [MailController::class, 'sendReservationConfirmation'])
         ->name('api.mail.reservation-confirmation');
 });
+
+Route::get('reservations/by-date', [ReservationController::class, 'byDate']);
