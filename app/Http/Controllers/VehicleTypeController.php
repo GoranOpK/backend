@@ -14,7 +14,7 @@ class VehicleTypeController extends Controller
      */
     public function index()
     {
-        return VehicleType::all();
+        return response()->json(\App\Models\VehicleType::all());
     }
 
     /**
