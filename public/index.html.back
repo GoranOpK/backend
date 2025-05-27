@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kotorbus Reservation</title>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f8f9fa;
+    }
+
+    header {
+      background-color: #9c1420;
+      padding: 20px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    header img {
+      height: 60px;
+    }
+
+      .main-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 40px;
+      margin: 40px auto 0 auto;
+      max-width: 1200px; /* Increase if needed */
+      width: 100%;
+      
+    }
+
+    #calendar {
+      min-width: 400px;
+      max-width: 600px;
+      flex: 1 1 0;
+    }
+
+    #slot-section {
+      min-width: 320px;
+      max-width: 500px;
+      flex: 1 1 0;
+    }
+
+    select, button, input[type="date"], input[type="text"], input[type="email"] {
+      padding: 4px;
+      margin: 4px 0;
+      font-size: 14px;
+      width: 90%;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      background-color: #9c1420;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #7a1018;
+    }
+
+    footer {
+      background-color: #9c1420;
+      color: white;
+      padding: 16px 0;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+      left: 0;
+      text-align: center;
+    }
+
+    /* Modal styles */
+    #terms-modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    #terms-modal .modal-content {
+      background: #fff;
+      max-width: 500px;
+      margin: 60px auto;
+      padding: 24px;
+      border-radius: 8px;
+      position: relative;
+    }
+
+    #terms-modal h2 {
+      margin-top: 0;
+    }
+
+    #terms-modal .close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+    }
+  </style>
+  
+</head>
+
+<body>
+  
+  <header>
+    <img src="logo.png" alt="Kotorbus Logo">
+  </header>
+
+  <div class="main-container">
+    <div id="calendar"></div>
+
+    <div id="slot-section">
+      <h3>Pick a date</h3>
+      <input type="date" id="reservation_date" />
+      <p>Arrival time</p]>
+      <select id="arrival-time-slot"></select>
+      <p>Departure time</p>
+      <select id="departure-time-slot"></select>
+      <br>
+      <input type="text" id="registration-input" placeholder="Registration" required>
+      <input type="text" id="country-input" placeholder="Country of origin" required>
+      <input type="text" id="company_name" placeholder="Company name" required>
+      <input type="email" id="email" placeholder="Email" required>
+      <select id="vehicle_type_id" required>
+        <option value="">Select vehicle category</option>
+      </select>
+      <label style="display:block; margin:10px 0;">
+        <input type="checkbox" id="user_agreement" required>
+        I agree to the <a href="#" id="show-terms">terms and conditions</a>.
+      </label>
+      <span id="agreement-error" style="color:red; display:none;">You must agree to the terms to reserve a slot.</span>
+      <br>
+      <button onclick="reserveSlot()">Reserve</button>
+    </div>
+  </div>
+
+  <!-- Modal for Terms and Conditions -->
+  <div id="terms-modal">
+    <div class="modal-content">
+      <span class="close" id="close-terms">&times;</span>
+      <h2>Terms and Conditions</h2>
+      <div style="max-height:300px; overflow-y:auto;">
+        <p>
+          <!-- Your terms and conditions text goes here -->
+          By using this service, you agree to abide by all rules and regulations set forth by Kotorbus. Reservations are subject to availability and may be cancelled or changed at the discretion of the company. Please ensure all information provided is accurate. For full details, contact our support.
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <footer>
+    <p>Bidonkaktus. TEST &copy; 2025 Kotorbus</p>
+  </footer>
+<script src="script.js"></script>
+</body>
+</html>

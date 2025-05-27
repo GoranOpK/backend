@@ -34,13 +34,15 @@ class VehicleTypeController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \App\Models\VehicleType
      */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string',
-        ]);
-        return VehicleType::create($validated);
-    }
+     public function store(Request $request)
+     {
+         $validated = $request->validate([
+             'type_name' => 'required|string|unique:vehicle_types,type_name',
+             'description' => 'nullable|string',
+             'price' => 'required|numeric',
+         ]);
+         return VehicleType::create($validated);
+     }
 
     /**
      * Ažurira postojeći tip vozila.

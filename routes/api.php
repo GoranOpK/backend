@@ -64,3 +64,13 @@ Route::group([], function () {
 });
 
 Route::get('reservations/by-date', [ReservationController::class, 'byDate']);
+
+Route::get('test', function() {
+    return response()->json(['ok' => true]);
+});
+
+// Route::get('vehicle-types', [VehicleTypeController::class, 'index']);
+
+Route::get('testjson', function() {
+    return response()->json(['ok' => true]);
+});
