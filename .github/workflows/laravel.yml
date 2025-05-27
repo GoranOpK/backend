@@ -11,7 +11,7 @@ on:
 jobs:
   laravel-tests:
     name: Run Laravel Tests
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     services:
       mysql:
