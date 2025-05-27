@@ -9,19 +9,14 @@ class TimeSlotController extends Controller
 {
     /**
      * Prikazuje sve vremenske slotove sa paginacijom.
-     *
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function index()
     {
-        return TimeSlot::paginate(10); // Vraća po 10 slotova po stranici
+        return TimeSlot::paginate(10);
     }
 
     /**
      * Prikazuje pojedinačni vremenski slot na osnovu ID-a.
-     *
-     * @param int $id
-     * @return \App\Models\TimeSlot
      */
     public function show($id)
     {
@@ -30,27 +25,20 @@ class TimeSlotController extends Controller
 
     /**
      * Kreira novi vremenski slot.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \App\Models\TimeSlot
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
-            'type' => 'required|string|max:255',
-            'status' => 'required|in:available,booked,canceled',
+            'type' => 'required|in:drop_off,pick_up',
+            'status' => 'required|in:available,full,unavailable',
         ]);
         return TimeSlot::create($validated);
     }
 
     /**
      * Ažurira postojeći vremenski slot.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param int $id
-     * @return \App\Models\TimeSlot
      */
     public function update(Request $request, $id)
     {
@@ -59,8 +47,8 @@ class TimeSlotController extends Controller
         $validated = $request->validate([
             'start_time' => 'sometimes|required|date_format:H:i',
             'end_time' => 'sometimes|required|date_format:H:i|after:start_time',
-            'type' => 'sometimes|required|string|max:255',
-            'status' => 'sometimes|required|in:available,booked,canceled',
+            'type' => 'sometimes|required|in:drop_off,pick_up',
+            'status' => 'sometimes|required|in:available,full,unavailable',
         ]);
 
         $slot->update($validated);
@@ -69,14 +57,38 @@ class TimeSlotController extends Controller
 
     /**
      * Briše vremenski slot.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($id)
     {
         $slot = TimeSlot::findOrFail($id);
         $slot->delete();
         return response()->json(['message' => 'Deleted']);
+    }
+
+    /**
+     * Vraća dostupne vremenske slotove za odabrani datum i tip.
+     */
+    public function availableSlots(Request $request)
+    {
+        $date = $request->query('date');
+        $type = $request->query('type'); // 'drop_off' ili 'pick_up'
+
+        if (!$date || !$type) {
+            return response()->json(['error' => 'Date and type parameters are required.'], 400);
+        }
+
+        // Slot je slobodan ako nije rezervisan za dati dan i tip i status mu je available
+        $reservedSlotIds = \DB::table('reservations')
+            ->join('time_slots', 'reservations.time_slot_id', '=', 'time_slots.id')
+            ->where('reservations.reservation_date', $date)
+            ->where('time_slots.type', $type)
+            ->pluck('time_slot_id');
+
+        $availableSlots = TimeSlot::where('type', $type)
+            ->where('status', 'available')
+            ->whereNotIn('id', $reservedSlotIds)
+            ->get();
+
+        return response()->json($availableSlots);
     }
 }

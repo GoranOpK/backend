@@ -7,17 +7,17 @@ use App\Http\Controllers\VehicleTypeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\SystemConfigController;
 use App\Http\Controllers\ExampleController;
-use App\Http\Controllers\MailController; // Dodavanje MailController-a
+use App\Http\Controllers\MailController;
 
 // Javne rute za korisnike (bez logovanja)
 Route::group([], function () {
     // Ruta za kreiranje rezervacije (s throttling zaštitom)
-    Route::post('reservations', [ReservationController::class, 'store'])->middleware('throttle:10,1'); // 10 zahtjeva po minuti
+    Route::post('reservations', [ReservationController::class, 'store'])->middleware('throttle:10,1');
 
     // Ruta za pregled svih vremenskih slotova
     Route::get('timeslots', [TimeSlotController::class, 'index']);
 
-    // Ruta za dostupne vremenske slotove
+    // Ruta za dostupne vremenske slotove (slobodni slotovi za određeni dan i tip)
     Route::get('timeslots/available', [TimeSlotController::class, 'availableSlots']);
 
     // Pregled tipova vozila
@@ -46,19 +46,16 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 });
 
 // Rute za prijavu i odjavu administratora
-Route::post('admin/login', [AdminController::class, 'login']); // Prijava administratora
-Route::post('admin/logout', [AdminController::class, 'logout'])->middleware('auth:sanctum'); // Odjava administratora
+Route::post('admin/login', [AdminController::class, 'login']);
+Route::post('admin/logout', [AdminController::class, 'logout'])->middleware('auth:sanctum');
 
 // RESTful rute za ExampleController
-Route::apiResource('examples', ExampleController::class); // Dodavanje punih RESTful ruta za ExampleController
+Route::apiResource('examples', ExampleController::class);
 
 // Rute za slanje email-a
 Route::group([], function () {
-    // Ruta za slanje potvrde o plaćanju
     Route::post('send-payment-confirmation', [MailController::class, 'sendPaymentConfirmation'])
         ->name('api.mail.payment-confirmation');
-
-    // Ruta za slanje potvrde o rezervaciji
     Route::post('send-reservation-confirmation', [MailController::class, 'sendReservationConfirmation'])
         ->name('api.mail.reservation-confirmation');
 });
@@ -68,8 +65,6 @@ Route::get('reservations/by-date', [ReservationController::class, 'byDate']);
 Route::get('test', function() {
     return response()->json(['ok' => true]);
 });
-
-// Route::get('vehicle-types', [VehicleTypeController::class, 'index']);
 
 Route::get('testjson', function() {
     return response()->json(['ok' => true]);
