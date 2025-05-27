@@ -48,24 +48,22 @@ jobs:
 
       - name: Set up storage and permissions
         run: |
-          mkdir storage\framework\cache
-          mkdir storage\framework\sessions
-          mkdir storage\framework\views
-          mkdir bootstrap\cache
-          icacls storage /grant Everyone:(OI)(CI)F /T
-          icacls bootstrap\cache /grant Everyone:(OI)(CI)F /T
+          mkdir -p storage/framework/cache
+          mkdir -p storage/framework/sessions
+          mkdir -p storage/framework/views
+          mkdir -p bootstrap/cache
+          chmod -R 775 storage
+          chmod -R 775 bootstrap/cache
 
       - name: Copy environment file and configure DB
-        shell: pwsh
         run: |
-          Copy-Item .env.example .env -Force
-          (Get-Content .env) -replace '^DB_CONNECTION=.*', 'DB_CONNECTION=mysql' |
-            ForEach-Object { $_ -replace '^DB_HOST=.*', 'DB_HOST=127.0.0.1' } |
-            ForEach-Object { $_ -replace '^DB_PORT=.*', 'DB_PORT=3306' } |
-            ForEach-Object { $_ -replace '^DB_DATABASE=.*', 'DB_DATABASE=my_mysql' } |
-            ForEach-Object { $_ -replace '^DB_USERNAME=.*', 'DB_USERNAME=OpKotor' } |
-            ForEach-Object { $_ -replace '^DB_PASSWORD=.*', 'DB_PASSWORD=bidonkaktus123' } |
-            Set-Content .env
+          cp .env.example .env
+          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=mysql/' .env
+          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env
+          sed -i 's/^DB_PORT=.*/DB_PORT=3306/' .env
+          sed -i 's/^DB_DATABASE=.*/DB_DATABASE=my_mysql/' .env
+          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=OpKotor/' .env
+          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=bidonkaktus123/' .env
 
       - name: Generate app key
         run: php artisan key:generate
