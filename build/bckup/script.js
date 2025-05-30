@@ -61,32 +61,39 @@ document.addEventListener('DOMContentLoaded', function () {
     return slots;
   }
 
-  function populateTimeSlotSelect(selectId, availableTimes = []) {
-    const select = document.getElementById(selectId);
-    select.innerHTML = '';
-    availableTimes.forEach(time => {
-      const option = document.createElement('option');
-      option.value = time;
-      option.textContent = time;
-      select.appendChild(option);
+function fetchAllTimeSlots() {
+  fetch('http://192.168.115.106:8000/api/time-slots')
+    .then(res => res.json())
+    .then(data => {
+      // Example: log to console or display in a table
+      console.log(data);
+      // To display, loop through data and add rows to a table
+      // Example:
+      // data.forEach(slot => { ... });
     });
-  }
+}
 
-  function fetchReservedSlots(date, callback) {
-    fetch('http://192.168.115.106:8000/api/timeslots/available?date=' + date)
-      .then(res => res.json())
-      .then(data => callback(data))
-      .catch(() => callback([]));
-  }
+function fetchReservedSlots(date, callback) {
+  fetch('http://192.168.115.106:8000/api/timeslots/available?date=' + encodeURIComponent(date), {
+    headers: {
+      'Accept': 'application/json'
+    }
+  })
+    .then(res => {
+      if (!res.ok) throw new Error('Network response was not ok');
+      return res.json();
+    })
+    .then(data => callback(data))
+    .catch(() => callback([]));
+}
 
-  document.getElementById('reservation_date').addEventListener('change', function () {
-    const date = this.value;
-    // You probably want to fetch reserved slots for the selected date and update time slots
-    fetchReservedSlots(date, function(reservedSlots) {
-      populateTimeSlotSelect('arrival-time-slot', reservedSlots);
-      populateTimeSlotSelect('departure-time-slot', reservedSlots);
-    });
+document.getElementById('reservation_date').addEventListener('change', function () {
+  const date = this.value;
+  fetchReservedSlots(date, function(reservedSlots) {
+    populateTimeSlotSelect('arrival-time-slot', reservedSlots);
+    populateTimeSlotSelect('departure-time-slot', reservedSlots);
   });
+});
 
   window.reserveSlot = function () {
     const reservationDate = document.getElementById('reservation_date').value;

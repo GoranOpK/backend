@@ -6,8 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Reservation extends Model
 {
+    protected $table = 'reservations';
+
     protected $fillable = [
-        'time_slot_id',
+        'drop_off_time_slot_id',
+        'pick_up_time_slot_id',
         'reservation_date',
         'user_name',
         'country',
@@ -15,6 +18,24 @@ class Reservation extends Model
         'vehicle_type_id',
         'email',
         'status',
-        'type', // drop_off ili pick_up
     ];
+
+    protected $casts = [
+        'reservation_date' => 'date',
+    ];
+
+    public function dropOffTimeSlot()
+    {
+        return $this->belongsTo(TimeSlot::class, 'drop_off_time_slot_id');
+    }
+
+    public function pickUpTimeSlot()
+    {
+        return $this->belongsTo(TimeSlot::class, 'pick_up_time_slot_id');
+    }
+
+    public function vehicleType()
+    {
+        return $this->belongsTo(VehicleType::class, 'vehicle_type_id');
+    }
 }

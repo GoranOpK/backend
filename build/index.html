@@ -5,122 +5,15 @@
   <title>Kotorbus Reservation</title>
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background: #f8f9fa;
-    }
-
-    header {
-      background-color: #9c1420;
-      padding: 20px;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-    }
-
-    header img {
-      height: 60px;
-    }
-
-      .main-container {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      gap: 40px;
-      margin: 40px auto 0 auto;
-      max-width: 1200px; /* Increase if needed */
-      width: 100%;
-      
-    }
-
-    #calendar {
-      min-width: 400px;
-      max-width: 600px;
-      flex: 1 1 0;
-    }
-
-    #slot-section {
-      min-width: 320px;
-      max-width: 500px;
-      flex: 1 1 0;
-    }
-
-    select, button, input[type="date"], input[type="text"], input[type="email"] {
-      padding: 4px;
-      margin: 4px 0;
-      font-size: 14px;
-      width: 90%;
-      box-sizing: border-box;
-    }
-
-    button {
-      width: 100%;
-      background-color: #9c1420;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #7a1018;
-    }
-
-    footer {
-      background-color: #9c1420;
-      color: white;
-      padding: 16px 0;
-      position: fixed;
-      width: 100%;
-      bottom: 0;
-      left: 0;
-      text-align: center;
-    }
-
-    /* Modal styles */
-    #terms-modal {
-      display: none;
-      position: fixed;
-      z-index: 2000;
-      left: 0;
-      top: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.5);
-    }
-
-    #terms-modal .modal-content {
-      background: #fff;
-      max-width: 500px;
-      margin: 60px auto;
-      padding: 24px;
-      border-radius: 8px;
-      position: relative;
-    }
-
-    #terms-modal h2 {
-      margin-top: 0;
-    }
-
-    #terms-modal .close {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      cursor: pointer;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
   
 </head>
 
 <body>
   
   <header>
-    <img src="logo.png" alt="Kotorbus Logo">
-  </header>
+      <img src="logo.png" alt="Kotorbus Logo">
+   </header>
 
   <div class="main-container">
     <div id="calendar"></div>
@@ -128,10 +21,11 @@
     <div id="slot-section">
       <h3>Pick a date</h3>
       <input type="date" id="reservation_date" />
-      <p>Arrival time</p]>
+      <p>Arrival time</p>
       <select id="arrival-time-slot"></select>
       <p>Departure time</p>
       <select id="departure-time-slot"></select>
+      <br>
       <br>
       <input type="text" id="company_name" placeholder="Company name" required>
       <input type="text" id="country-input" placeholder="Country" required>
@@ -165,7 +59,8 @@
   </div>
   
   <footer>
-    <p>Bidonkaktus. TEST2 &copy; 2025 Kotorbus</p>
+    <img src="logoop.png" alt="OpKotor" style="height:80px;">
+    <p>Bidonkaktus. TEST3 &copy; 2025 Kotorbus</p>
   </footer>
 <script src="script.js"></script>
 </body>

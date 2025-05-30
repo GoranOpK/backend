@@ -12,9 +12,12 @@ use App\Http\Controllers\MailController;
 // ---------------------------
 // JAVNE RUTE (korisnici bez logovanja)
 // ---------------------------
-Route::group([], function () {
-    // Kreiranje rezervacije (sa throttle zaštitom)
-    Route::post('reservations', [ReservationController::class, 'store'])->middleware('throttle:10,1');
+    Route::group([], function () {
+    // Prikaz slotova za određeni dan
+    Route::get('reservations/slots', [ReservationController::class, 'showSlots']);
+
+    // Rezervacija slota (sa throttle zaštitom)
+    Route::post('reservations/reserve', [ReservationController::class, 'reserve'])->middleware('throttle:10,1');
 
     // Pregled svih vremenskih slotova
     Route::get('timeslots', [TimeSlotController::class, 'index']);
@@ -29,7 +32,7 @@ Route::group([], function () {
 // ---------------------------
 // ADMIN RUTE (zaštićene, potrebna autentifikacija i admin uloga)
 // ---------------------------
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // Upravljanje slotovima (osim index prikaza)
     Route::apiResource('timeslots', TimeSlotController::class)->except(['index']);
 
@@ -52,30 +55,50 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 // ---------------------------
 // AUTENTIFIKACIJA ADMINA
 // ---------------------------
-Route::post('admin/login', [AdminController::class, 'login']);
-Route::post('admin/logout', [AdminController::class, 'logout'])->middleware('auth:sanctum');
+   Route::post('admin/login', [AdminController::class, 'login']);
+   Route::post('admin/logout', [AdminController::class, 'logout'])->middleware('auth:sanctum');
 
 // ---------------------------
 // PRIMJER RESTful RUTA ZA ExampleController
 // ---------------------------
-Route::apiResource('examples', ExampleController::class);
+   Route::apiResource('examples', ExampleController::class);
 
 // ---------------------------
 // RUTE ZA SLANJE EMAIL-OVA
 // ---------------------------
-Route::group([], function () {
-    Route::post('send-payment-confirmation', [MailController::class, 'sendPaymentConfirmation'])
-        ->name('api.mail.payment-confirmation');
-    Route::post('send-reservation-confirmation', [MailController::class, 'sendReservationConfirmation'])
-        ->name('api.mail.reservation-confirmation');
+   Route::group([], function () {
+   Route::post('send-payment-confirmation', [MailController::class, 'sendPaymentConfirmation'])
+       ->name('api.mail.payment-confirmation');
+   Route::post('send-reservation-confirmation', [MailController::class, 'sendReservationConfirmation'])
+       ->name('api.mail.reservation-confirmation');
 });
 
 // ---------------------------
 // DODATNE RUTE
 // ---------------------------
 // Pregled rezervacija po datumu (npr. za kalendar)
-Route::get('reservations/by-date', [ReservationController::class, 'byDate']);
+   Route::get('reservations/by-date', [ReservationController::class, 'byDate']);
 
 // Test rute za provjeru API-ja
-Route::get('test', fn() => response()->json(['ok' => true]));
-Route::get('testjson', fn() => response()->json(['ok' => true]));
+   Route::get('test', fn() => response()->json(['ok' => true]));
+   Route::get('testjson', fn() => response()->json(['ok' => true]));
+
+// ---------------------------
+// RUTE ZA REZERVACIJE (ReservationController)
+// ---------------------------
+
+// Pregled slotova za određeni dan (public, GET, npr. /api/reservations/slots?date=2025-05-31)
+   Route::get('reservations/slots', [ReservationController::class, 'showSlots']);
+
+// Rezervacija slota (public, POST, npr. /api/reservations/reserve)
+   Route::post('reservations/reserve', [ReservationController::class, 'reserve'])->middleware('throttle:10,1');
+
+// ADMIN rute za rezervacije (pregled svih, prikaz pojedinačne, brisanje)
+   Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+   Route::get('reservations', [ReservationController::class, 'index']);      // Lista svih rezervacija
+   Route::get('reservations/{reservation}', [ReservationController::class, 'show']); // Detalji rezervacije
+   Route::delete('reservations/{reservation}', [ReservationController::class, 'destroy']); // Brisanje rezervacije
+
+// Promena statusa rezervacije (npr. odobravanje/otkazivanje)
+   Route::patch('reservations/{id}/status', [ReservationController::class, 'updateStatus']);
+});

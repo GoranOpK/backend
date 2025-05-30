@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Reservation;
 use App\Models\TimeSlot;
+use App\Services\SlotService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 class ReservationController extends Controller
 {
+    protected $slotService;
+
     public function index()
     {
         $reservations = Reservation::all();
@@ -117,5 +120,25 @@ class ReservationController extends Controller
         $date = $request->query('date');
         $reservations = Reservation::whereDate('reservation_date', $date)->get();
         return response()->json($reservations);
+    }
+
+    public function __construct(SlotService $slotService)
+    {
+        $this->slotService = $slotService;
+    }
+
+    public function showSlots(Request $request)
+    {
+        $date = $request->input('date', now()->toDateString());
+        $slots = $this->slotService->getSlotsForDate($date);
+        return response()->json($slots);
+    }
+
+    public function reserve(Request $request)
+    {
+        $date = $request->input('date');
+        $slotId = $request->input('slot_id');
+        $this->slotService->reserveSlot($date, $slotId);
+        return response()->json(['status' => 'success']);
     }
 }

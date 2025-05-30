@@ -34,6 +34,7 @@ return [
     */
     'allowed_origins' => [
         'http://localhost:3000',      // za lokalni razvoj (npr. React/Vue dev server)
+        'http://192.168.115.106:3000', // za razvoj sa drugog racunara
         'https://tvoj-frontend.com',  // za produkciju - zamijeni sa tvojim frontend domenom
     ],
 

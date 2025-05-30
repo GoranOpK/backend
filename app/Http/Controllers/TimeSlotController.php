@@ -29,10 +29,7 @@ class TimeSlotController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
-            'type' => 'required|in:drop_off,pick_up',
-            'status' => 'required|in:available,full,unavailable',
+            'time_slot' => 'required|string|max:255',
         ]);
         return TimeSlot::create($validated);
     }
@@ -45,10 +42,7 @@ class TimeSlotController extends Controller
         $slot = TimeSlot::findOrFail($id);
 
         $validated = $request->validate([
-            'start_time' => 'sometimes|required|date_format:H:i',
-            'end_time' => 'sometimes|required|date_format:H:i|after:start_time',
-            'type' => 'sometimes|required|in:drop_off,pick_up',
-            'status' => 'sometimes|required|in:available,full,unavailable',
+            'time_slot' => 'sometimes|required|string|max:255',
         ]);
 
         $slot->update($validated);
@@ -66,28 +60,33 @@ class TimeSlotController extends Controller
     }
 
     /**
-     * Vraća dostupne vremenske slotove za odabrani datum i tip.
+     * Vraća sve vremenske slotove. (Prilagođeno jer nema status/type)
      */
     public function availableSlots(Request $request)
     {
-        $date = $request->query('date');
-        $type = $request->query('type'); // 'drop_off' ili 'pick_up'
+        // Ovde možeš filter po ID-jevima koji su zauzeti za određeni datum, ako ima smisla.
+        // Pošto tvoja tabela nema "status", filtriraćeš samo po zauzetosti u reservations.
 
-        if (!$date || !$type) {
-            return response()->json(['error' => 'Date and type parameters are required.'], 400);
+        $date = $request->query('date');
+        if (!$date) {
+            return response()->json(['error' => 'Date parameter is required.'], 400);
         }
 
-        // Slot je slobodan ako nije rezervisan za dati dan i tip i status mu je available
-        $reservedSlotIds = \DB::table('reservations')
-            ->join('time_slots', 'reservations.time_slot_id', '=', 'time_slots.id')
-            ->where('reservations.reservation_date', $date)
-            ->where('time_slots.type', $type)
-            ->pluck('time_slot_id');
+        // Pronađi slotove koji su rezervisani za taj datum
+        $reservedDropOffSlotIds = \DB::table('reservations')
+            ->where('reservation_date', $date)
+            ->pluck('drop_off_time_slot_id')
+            ->toArray();
 
-        $availableSlots = TimeSlot::where('type', $type)
-            ->where('status', 'available')
-            ->whereNotIn('id', $reservedSlotIds)
-            ->get();
+        $reservedPickUpSlotIds = \DB::table('reservations')
+            ->where('reservation_date', $date)
+            ->pluck('pick_up_time_slot_id')
+            ->toArray();
+
+        $reservedSlotIds = array_unique(array_merge($reservedDropOffSlotIds, $reservedPickUpSlotIds));
+
+        // Slobodni slotovi su svi koji NISU u rezervisanim
+        $availableSlots = TimeSlot::whereNotIn('id', $reservedSlotIds)->get();
 
         return response()->json($availableSlots);
     }
