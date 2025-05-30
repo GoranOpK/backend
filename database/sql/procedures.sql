@@ -1,6 +1,7 @@
 USE web_base;
 
 -- 1. Procedura za dodavanje nove rezervacije
+-- Poziva se CALL AddReservation(5, 15, '2025-05-29', 'Turist test', 'Crna gora', 'KOAB123', 3, 'pera@example.com');
 DELIMITER $$
 
 CREATE PROCEDURE AddReservation (
@@ -21,6 +22,15 @@ BEGIN
     DECLARE is_pick_up_available BOOLEAN DEFAULT FALSE;
 
     SET reservation_table = DATE_FORMAT(reservation_date, '%Y%m%d');
+
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.tables 
+        WHERE table_schema = 'web_base' 
+        AND table_name = reservation_table)
+    THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Tabela nije kreirana.';
+    END IF;
 
     -- Provera validnosti tipa vozila
     IF NOT (vehicleTypeId = 1 OR vehicleTypeId = 2 OR vehicleTypeId = 3) THEN
@@ -100,20 +110,23 @@ CREATE PROCEDURE CheckTimeSlotAvailability (
 )
 BEGIN
     DECLARE reservation_table VARCHAR(20);
-
     SET reservation_table = DATE_FORMAT(reservation_date, '%Y%m%d');
-
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.tables 
+        WHERE table_schema = 'web_base' 
+        AND table_name = reservation_table)
+    THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Tabela nije kreirana.';
+    END IF;
     SET @sql = CONCAT('SELECT available INTO @is_available FROM `', reservation_table, '` WHERE time_slot_id = ?');
     PREPARE stmt FROM @sql;
     SET @slot_id = timeSlotId;
     EXECUTE stmt USING @slot_id;
     DEALLOCATE PREPARE stmt;
-
     SET isAvailable = @is_available;
 END$$
 DELIMITER ;
-
-USE web_base;
 
 -- 3. Procedura za dinamičko pravljenje tabela
 -- Poziva se sa CALL CreateTableForDateWithData('2025-05-28');
@@ -159,12 +172,20 @@ DELIMITER ;
 DELIMITER $$
 CREATE PROCEDURE DropTableForDate(IN p_date DATE)
 BEGIN
-    DECLARE table_name VARCHAR(20);
+    DECLARE reservation_table VARCHAR(20);
     DECLARE sql_query TEXT;
 -- Formatiraj datum u 'YYYYMMDD'
-    SET table_name = DATE_FORMAT(p_date, '%Y%m%d');
+    SET reservation_table = DATE_FORMAT(p_date, '%Y%m%d');
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.tables 
+        WHERE table_schema = 'web_base' 
+        AND table_name = CAST(reservation_table AS CHAR))
+    THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Tabela nije kreirana.';
+    END IF;
 -- Sastavi SQL upit za brisanje tabele
-    SET @sql_query = CONCAT('DROP TABLE IF EXISTS `', table_name, '`');
+    SET @sql_query = CONCAT('DROP TABLE IF EXISTS `', reservation_table, '`');
 -- Pripremi i izvrši dinamički SQL
     PREPARE stmt FROM @sql_query;
     EXECUTE stmt;
@@ -177,15 +198,21 @@ DELIMITER ;
 DELIMITER $$
 CREATE PROCEDURE BlockTableForDate(IN p_date DATE)
 BEGIN
-    DECLARE table_name VARCHAR(20);
+    DECLARE reservation_table VARCHAR(20);
     DECLARE insert_query TEXT;
     DECLARE i INT;
-    SET table_name = DATE_FORMAT(p_date, '%Y%m%d');
+    SET reservation_table = DATE_FORMAT(p_date, '%Y%m%d');
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.tables 
+        WHERE table_schema = 'web_base' 
+        AND table_name = CAST(reservation_table AS CHAR))
+    THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Tabela nije kreirana.';
+    END IF;
     SET i = 1;
     WHILE i <= 41 DO
-        SET @insert_query = CONCAT(
-           'INSERT INTO `', table_name, '` (time_slot_id, remaining, available) VALUES (', i, ', 0, FALSE) ON DUPLICATE KEY UPDATE remaining = 0, available = FALSE'
-        );
+        SET @insert_query = CONCAT('UPDATE `', reservation_table, '` SET remaining = 0, available = FALSE WHERE time_slot_id = ',i);
         PREPARE stmt FROM @insert_query;
         EXECUTE stmt;
         DEALLOCATE PREPARE stmt;
@@ -195,7 +222,7 @@ END$$
 DELIMITER ;
 
 -- 6. Procedura koja blokira prodaju time slotova za zadati dan u zadatom intervalu
--- Poziva se sa CALL BlockTableForDate('2025-05-29', 10, 20);
+-- Poziva se sa CALL BlockSlotsForDate('2025-05-29', 10, 20);
 DELIMITER $$
 CREATE PROCEDURE BlockSlotsForDate(
     IN p_date DATE,
@@ -203,11 +230,21 @@ CREATE PROCEDURE BlockSlotsForDate(
     IN lastTimeSlot INT
 )
 BEGIN
-    DECLARE table_name VARCHAR(20);
+    DECLARE reservation_table VARCHAR(20);
     DECLARE insert_query TEXT;
     DECLARE i INT;
 -- Formatiraj datum u 'YYYYMMDD'
-    SET table_name = DATE_FORMAT(p_date, '%Y%m%d');
+    SET reservation_table = DATE_FORMAT(p_date, '%Y%m%d');
+
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.tables 
+        WHERE table_schema = 'web_base' 
+        AND table_name = CAST(reservation_table AS CHAR))
+    THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Tabela nije kreirana.';
+    END IF;
+
     IF (firstTimeSlot <= lastTimeSlot AND 
         firstTimeSlot >= 1 AND
         firstTimeSlot <= 41 AND
@@ -215,7 +252,7 @@ BEGIN
         lastTimeSlot <= 41) THEN
         SET i = firstTimeSlot;
         WHILE i <= lastTimeSlot DO
-            SET @insert_query = CONCAT('INSERT INTO `', table_name, '` (time_slot_id, remaining, available) VALUES (', i, ', 0, FALSE) ON DUPLICATE KEY UPDATE remaining = 0, available = FALSE');
+            SET @insert_query = CONCAT('UPDATE `', reservation_table, '` SET remaining = 0, available = FALSE WHERE time_slot_id = ',i);
             PREPARE stmt FROM @insert_query;
             EXECUTE stmt;
             DEALLOCATE PREPARE stmt;
