@@ -29,10 +29,10 @@ class PaymentConfirmationMail extends Mailable
     // Konfiguriše email: podešava subject, view i attach-uje PDF fajl kao račun
     public function build()
     {
-        return $this->subject('Potvrda o plaćanju i račun') // Naslov emaila
+        return $this->subject('Payment receipt and invoice') // Naslov emaila
             ->view('emails.payment_confirmation') // Blade view koji prikazuje sadržaj emaila
             ->attach($this->pdfPath, [ // Prilaže PDF račun kao attachment
-                'as' => 'racun.pdf', // Ime fajla u emailu
+                'as' => 'invoice.pdf', // Ime fajla u emailu
                 'mime' => 'application/pdf', // MIME tip za PDF
             ]);
     }

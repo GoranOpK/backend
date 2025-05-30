@@ -29,9 +29,9 @@ class PaymentController extends Controller
             // 4. Pošalji email sa potvrdom i računom u attach-u
             Mail::to($validated['email'])->send(new PaymentConfirmationMail($paymentDetails, $pdfPath));
             
-            return response()->json(['message' => 'Plaćanje uspješno, provjerite email za potvrdu i račun!']);
+            return response()->json(['message' => 'Payment successful, check your email for confirmation and invoice!']);
         } else {
-            return response()->json(['error' => 'Plaćanje nije uspjelo.'], 400);
+            return response()->json(['error' => 'Payment failed.'], 400);
         }
     }
 }
