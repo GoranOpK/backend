@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Avo Slot Rezervacija API",
+    "title": "Slot Rezervacija API",
     "version": "1.0.0",
     "description": "API za rezervaciju slotova za iskrcaj/ukrcaj i administraciju"
   },
