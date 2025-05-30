@@ -17,7 +17,7 @@ class AdminsSeeder extends Seeder
 
             [   // vrijednosti koje upisujemo ili ažuriramo
                 'password_hash' => Hash::make('bidonkaktus123'), // promijeni 'tvoja_lozinka' u željenu lozinku
-                'email' => 'kotorbus@kotor.me', // zamijeni po potrebi
+                'email' => 'bus@kotor.me', // zamijeni po potrebi
                 'created_at' => now(),
             ]
         );

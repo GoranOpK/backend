@@ -18,7 +18,7 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, $role): Response
     {
-        // Proverava da li autentifikovani korisnik ima odgovarajuću ulogu
+        // Provjerava da li autentifikovani korisnik ima odgovarajuću ulogu
         if ($request->user() && $request->user()->role === $role) {
             return $next($request); // Dozvoli prolaz ako korisnik ima odgovarajuću ulogu
         }
