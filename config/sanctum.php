@@ -9,9 +9,10 @@ return [
     | Stateful Domains
     |--------------------------------------------------------------------------
     |
-    | Requests from the following domains / hosts will receive stateful API
-    | authentication cookies. Typically, these should include your local
-    | and production domains which access your API via a frontend SPA.
+    | Ovdje navodiš koji domeni/hostovi će primati stateful (cookie-based) API
+    | autentifikaciju. Ovo su obično tvoji frontend domeni (lokalni i produkcijski)
+    | koji pristupaju API-ju kao SPA (Single Page Application).
+    | Na ove domene browser šalje cookies i očekuje session-autentifikaciju.
     |
     */
 
@@ -27,10 +28,9 @@ return [
     | Sanctum Guards
     |--------------------------------------------------------------------------
     |
-    | This array contains the authentication guards that will be checked when
-    | Sanctum is trying to authenticate a request. If none of these guards
-    | are able to authenticate the request, Sanctum will use the bearer
-    | token that's present on an incoming request for authentication.
+    | Ovdje navodiš koje Laravel "guardove" koristi Sanctum za provjeru autentifikacije.
+    | Najčešće je to 'web', što znači da koristi standardnu autentikaciju korisnika
+    | iz Laravel-a. Ako koristiš više guardova, možeš ih ovdje navesti.
     |
     */
 
@@ -41,9 +41,9 @@ return [
     | Expiration Minutes
     |--------------------------------------------------------------------------
     |
-    | This value controls the number of minutes until an issued token will be
-    | considered expired. This will override any values set in the token's
-    | "expires_at" attribute, but first-party sessions are not affected.
+    | Broj minuta nakon kojeg će izdat token biti istekao (ako je podešeno).
+    | Ako je null, tokeni ne ističu automatski. Ovo se odnosi na personal access token-e,
+    | ali ne i na sesije iz browsera (one traju koliko i session).
     |
     */
 
@@ -54,11 +54,9 @@ return [
     | Token Prefix
     |--------------------------------------------------------------------------
     |
-    | Sanctum can prefix new tokens in order to take advantage of numerous
-    | security scanning initiatives maintained by open source platforms
-    | that notify developers if they commit tokens into repositories.
-    |
-    | See: https://docs.github.com/en/code-security/secret-scanning/about-secret-scanning
+    | Prefiks koji se dodaje na početak novih tokena radi bolje sigurnosti
+    | (npr. radi lakšeg prepoznavanja tokena u kodu ili za potrebe skeniranja
+    | na platformama poput GitHub-a). Obično može ostati prazan.
     |
     */
 
@@ -69,9 +67,12 @@ return [
     | Sanctum Middleware
     |--------------------------------------------------------------------------
     |
-    | When authenticating your first-party SPA with Sanctum you may need to
-    | customize some of the middleware Sanctum uses while processing the
-    | request. You may change the middleware listed below as required.
+    | Ovdje možeš definisati koje middleware-ove Sanctum koristi tokom
+    | obrade zahtjeva za SPA autentifikaciju.
+    | - 'authenticate_session' provjerava korisničku sesiju,
+    | - 'encrypt_cookies' šifrira cookies,
+    | - 'validate_csrf_token' provjerava CSRF token.
+    | Ove vrijednosti uglavnom ne trebaš mijenjati.
     |
     */
 
