@@ -9,10 +9,9 @@ class CreateVehicleTypesTable extends Migration
     public function up()
     {
         Schema::create('vehicle_types', function (Blueprint $table) {
-            $table->id();
-            $table->text('description_vehicle')->nullable();
+            $table->increments('id'); // INT UNSIGNED PRIMARY KEY
+            $table->text('description_vehicle');
             $table->decimal('price', 10, 2);
-            $table->timestamps();
         });
     }
 

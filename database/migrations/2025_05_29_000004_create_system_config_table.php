@@ -9,8 +9,8 @@ class CreateSystemConfigTable extends Migration
     public function up()
     {
         Schema::create('system_config', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->unique();
+            $table->increments('id');
+            $table->string('name', 255)->unique();
             $table->integer('value');
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });

@@ -9,17 +9,16 @@ class CreateReservationsTable extends Migration
     public function up()
     {
         Schema::create('reservations', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('drop_off_time_slot_id');
-            $table->unsignedBigInteger('pick_up_time_slot_id');
+            $table->increments('id');
+            $table->unsignedInteger('drop_off_time_slot_id');
+            $table->unsignedInteger('pick_up_time_slot_id');
             $table->date('reservation_date');
-            $table->string('user_name');
+            $table->string('user_name', 255);
             $table->string('country', 100);
             $table->string('license_plate', 50);
-            $table->unsignedBigInteger('vehicle_type_id');
-            $table->string('email');
+            $table->unsignedInteger('vehicle_type_id');
+            $table->string('email', 255);
             $table->enum('status', ['paid', 'pending'])->default('pending');
-            $table->timestamps();
 
             $table->foreign('drop_off_time_slot_id')->references('id')->on('list_of_time_slots');
             $table->foreign('pick_up_time_slot_id')->references('id')->on('list_of_time_slots');
