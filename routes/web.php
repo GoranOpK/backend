@@ -26,7 +26,7 @@ Route::get('/', function () {
 
 // Prikaz forme za unos podataka i plaćanje (ako postoji posebna forma)
 Route::get('/placanje', function () {
-    return view('placanje.forma'); // zamijeni sa nazivom svog view-a
+    return view('payment'); // zamijeni sa nazivom svog view-a
 })->name('placanje.forma');
 
 // Ruta za obradu online plaćanja - dostupno svima (bez autentikacije)
@@ -57,7 +57,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Izvještaj - samo admin ima pristup
         Route::get('izvjestaj', [ReportController::class, 'generate'])
-            ->name('izvjestaj');
+            ->name('report');
 
         // ========== TEST/DEV RUTE (ukloni u produkciji) ==========
 

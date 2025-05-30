@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Potvrda o plaćanju</title>
+    <title>Payment Confirmation</title>
 </head>
 <body>
-    <h1>Potvrda o plaćanju</h1>
-    <p>Ime: {{ $name }}</p>
-    <p>Iznos: {{ $amount }}</p>
-    <p>Datum: {{ $date }}</p>
+    <h1>Payment Confirmation</h1>
+    <p>Name: {{ $name }}</p>
+    <p>Amount: {{ $amount }}</p>
+    <p>Date: {{ $date }}</p>
 </body>
 </html>
