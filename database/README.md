@@ -1,91 +1,69 @@
-# My-MySQL
+# KotorBus – Laravel Baza Podataka i Seedovanje
 
-## Opis projekta
-Projekat sadrži SQL skripte za kreiranje i upravljanje bazom podataka za sistem rezervacija vozila, uključujući vremenske slotove, tipove vozila i rezervacije.
-
----
-
-## Struktura baze podataka
-
-### Tabele
-
-1. **admins**:
-   - Služi za čuvanje administratorskih naloga.
-   - **Kolone**: `id`, `username`, `password_hash`, `email`, `created_at`.
-
-2. **vehicle_types**:
-   - Sadrži tipove vozila (npr. kombi, mini bus, autobus).
-   - **Kolone**: `id`, `type_name`, `description`, `price`.
-
-3. **time_slots**:
-   - Vremenski slotovi za prevoz.
-   - **Kolone**: `id`, `start_time`, `end_time`, `slot_type`, `status`.
-
-4. **reservations**:
-   - Čuva podatke o rezervacijama.
-   - **Kolone**: `id`, `time_slot_id`, `reservation_date`, `company_name`, `country`, `license_plate`, `email`, `is_data_accurate`, `is_terms_accepted`, `payment_method`, `payment_status`.
+Ovaj projekat koristi **Laravel migracije** i **seedere** za upravljanje strukturom baze i početnim podacima, kao i posebne SQL fajlove za procedure i funkcije.
 
 ---
 
-## SQL fajlovi u repozitorijumu
+## 📦 Struktura foldera
 
-Evo spiska svih SQL fajlova dostupnih u ovom repozitorijumu i njihove namene:
-
-1. **`create_tables.sql`**:
-   - Koristi se za kreiranje svih potrebnih tabela u bazi podataka.
-   - **Pokretanje**:
-     ```bash
-     mysql -u root -p my_mysql < database/create_tables.sql
-     ```
-
-2. **`seed_data.sql`**:
-   - Dodaje osnovne podatke u bazu, kao što su tipovi vozila.
-   - **Pokretanje**:
-     ```bash
-     mysql -u root -p my_mysql < database/seed_data.sql
-     ```
-
-3. **`update_base.sql`**:
-   - Sadrži naknadne izmene i ažuriranja baze.
-   - **Pokretanje**:
-     ```bash
-     mysql -u root -p my_mysql < database/update_base.sql
-     ```
-
-4. **`database_procedures.sql`**:
-   - Sadrži definicije procedura za rad sa rezervacijama, vremenskim slotovima i tipovima vozila.
-   - **Pokretanje**:
-     ```bash
-     mysql -u root -p my_mysql < database/database_procedures.sql
-     ```
+```
+database/
+├── migrations/         # Laravel migracije – definicija svih tabela
+├── seeders/            # Laravel seederi – početni podaci za tabele
+├── sql/
+    ├── procedures.sql  # MySQL stored procedure (procedura)
+```
 
 ---
 
-## Inicijalizacija baze
+## 🛠️ Kako koristiti ovaj projekat
 
-Da biste postavili bazu podataka, pratite sledeće korake:
+### 1. Instalacija zavisnosti
 
-1. Kreirajte tabele:
-   ```bash
-   mysql -u root -p my_mysql < database/create_tables.sql
-   ```
+Pokreni u root folderu:
+```bash
+composer install
+```
 
-2. Ubacite inicijalne podatke:
-   ```bash
-   mysql -u root -p my_mysql < database/seed_data.sql
-   ```
+### 2. Konfiguriši .env za pristup bazi
 
-3. Ažurirajte bazu (ako je potrebno):
-   ```bash
-   mysql -u root -p my_mysql < database/update_base.sql
-   ```
+Postavi podatke za MySQL u `.env` fajlu:
+```
+DB_DATABASE=ime_baze
+DB_USERNAME=korisnik
+DB_PASSWORD=lozinka
+```
 
-4. Dodajte procedure:
-   ```bash
-   mysql -u root -p my_mysql < database/database_procedures.sql
-   ```
+### 3. Migracije – Kreiranje/podešavanje tabela
+
+Pokreni:
+```bash
+php artisan migrate
+```
+
+### 4. Seedovanje – Ubacivanje početnih podataka
+
+Pokreni:
+```bash
+php artisan db:seed
+```
+
+### 5. Ubacivanje procedura i funkcija
+
+Pokreni SQL fajlove ručno ili automatski:
+- Ručno (npr. iz phpMyAdmin-a ili MySQL konzole):
+  - `database/sql/procedures.sql`
+- **Opciono:** Dodaj u migraciju ako želiš automatski unos:
+    ```php
+    // Primer za migraciju
+    DB::unprepared(file_get_contents(database_path('sql/procedures.sql')));
+    ```
+---
+
+## 🔄 Preporuke
+
+- **U budućnosti koristi isključivo Laravel migracije i seedere** za sve što se tiče strukture i inicijalnih podataka.
+- **SQL fajlove sa procedurama/funkcijama drži u `database/sql/`** i redovno ažuriraj.
 
 ---
 
-## Autor
-GORAN GROVIK

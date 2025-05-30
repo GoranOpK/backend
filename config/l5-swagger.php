@@ -51,6 +51,11 @@ return [
                     base_path('app'),
                 ],
             ],
+
+            /*
+             * Ispravno: dodaj ovo kako bi izbjegao "Undefined array key 'additional_config_url'"
+             */
+            'additional_config_url' => null,
         ],
     ],
 
@@ -161,6 +166,11 @@ return [
          * URL za validaciju Swagger UI
          */
         'validator_url' => null,
+
+        /*
+         * DODAJ OVO: izbjegava grešku na Laravel 10/11/12 i L5 Swagger 9+
+         */
+        'additional_config_url' => null,
 
         /*
          * Postavke za Swagger UI korisnički interfejs
