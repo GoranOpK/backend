@@ -33,7 +33,8 @@ class SendInvoiceToUserMail extends Mailable
 
         // Vraćamo mail sa subject-om, tijelom poruke i dva PDF atačmenta
         return $this->subject('Your Payment Confirmation and Invoice') // Subject na engleskom jeziku
-            ->text('emails.empty') // Telo maila (možeš ovdje staviti i html view ili plain text)
+            // Telo maila iz blade fajla (na engleskom jeziku, sa cg komentarima)
+            ->view('emails.payment_notice', ['reservation' => $this->reservation])
             // Prilažemo potvrdu o plaćanju
             ->attachData(
                 $confirmationPdf->output(),
