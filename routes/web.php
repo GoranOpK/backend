@@ -3,17 +3,18 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\ReportController;
-use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\SupportController;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 |
-| Ovdje su sve rute za web aplikaciju.
-| - Korisnici mogu koristiti aplikaciju i izvršiti plaćanje BEZ logovanja.
+| Sve rute za web aplikaciju.
+| - Korisnici mogu koristiti aplikaciju i izvršiti plaćanje bez logovanja.
 | - Nakon uspješnog plaćanja, automatski dobijaju potvrdu i račun na email.
-| - Admin panel je zaštićen autentiikacijom ('auth:admin' middleware).
+| - Admin panel je zaštićen 'auth:admin' middleware-om.
 |
 */
 
@@ -24,27 +25,31 @@ Route::get('/', function () {
 
 // ======= JAVNE KORISNIČKE RUTE =======
 
-// Prikaz forme za unos podataka i plaćanje (ako postoji posebna forma)
+// Prikaz forme za unos podataka i plaćanje
 Route::get('/placanje', function () {
-    return view('payment'); // zamijeni sa nazivom svog view-a
+    return view('payment');
 })->name('placanje.forma');
 
-// Ruta za obradu online plaćanja - dostupno svima (bez autentikacije)
-Route::post('/procesiraj-placanje', [PaymentController::class, 'process'])
+// Obrada online plaćanja (rezervacija i plaćanje)
+Route::post('/procesiraj-placanje', [ReservationController::class, 'processPayment'])
     ->name('process.payment');
+
+// Kontakt/podrška - korisnici šalju upite na bus@kotor.me
+Route::get('/podrska', [SupportController::class, 'showForm'])->name('support.form');
+Route::post('/podrska', [SupportController::class, 'send'])->name('support.send');
 
 // ================== ADMIN PANEL ==================
 Route::prefix('admin')->name('admin.')->group(function () {
 
-    // Prikazuje login formu za admina (nije zaštićeno)
+    // Login forma za admina (nije zaštićeno)
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 
-    // Obrada login forme, sa zaštitom od brute-force napada
+    // Obrada login forme, zaštita od brute-force napada
     Route::post('login', [LoginController::class, 'login'])
         ->name('login.submit')
         ->middleware('throttle:5,1');
 
-    // Sve ispod ovoga je dostupno SAMO ulogovanom adminu
+    // Sve ispod ovoga dostupno je SAMO ulogovanom adminu
     Route::middleware('auth:admin')->group(function () {
 
         // Logout ruta za admina
@@ -55,9 +60,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             return view('admin.dashboard');
         })->name('dashboard');
 
-        // Izvještaj - samo admin ima pristup
-        Route::get('izvjestaj', [ReportController::class, 'generate'])
-            ->name('report');
+        // Prikaz PDF izvještaja - koristi servis ili kontroler za izvještaje
+        Route::get('izvjestaj', [ReportController::class, 'generate'])->name('report');
 
         // ========== TEST/DEV RUTE (ukloni u produkciji) ==========
 
@@ -97,6 +101,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
 |--------------------------------------------------------------------------
 | Napomena za produkciju
 |--------------------------------------------------------------------------
-| Sve test/development rute (test-session, test-cookie, csrf...) ukloni
+| Sve test/development rute (test-session, test-cookie, csrf...) OBAVEZNO ukloni
 | ili dodatno zaštiti prije nego što aplikaciju postaviš u produkciju!
 */
