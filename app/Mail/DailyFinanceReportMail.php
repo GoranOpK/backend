@@ -7,44 +7,35 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-/**
- * Klasa za slanje dnevnog finansijskog izvještaja putem email-a.
- * PDF izvještaj se automatski generiše i šalje kao atačment.
- */
 class DailyFinanceReportMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $date;
-    public $financeData;
+    public $data;
 
     /**
-     * Konstruktor prima datum izvještaja i podatke finansijskog izvještaja.
+     * Konstruktor - prosljeđuje podatke za izvještaj
      */
-    public function __construct($date, $financeData)
+    public function __construct($data)
     {
-        $this->date = $date;
-        $this->financeData = $financeData;
+        $this->data = $data;
     }
 
     /**
-     * Kreira email, generiše PDF i dodaje ga kao atačment.
+     * Priprema email sa dnevnim finansijskim izvještajem u pdf-u
      */
     public function build()
     {
-        $title = "Dnevni finansijski izvještaj za {$this->date}";
-        // Generisanje PDF-a iz blade view-a
-        $pdf = Pdf::loadView('reports.daily_finance_report_pdf', [
-            'title' => $title,
-            'financeData' => $this->financeData,
-            'date' => $this->date,
-        ]);
+        // Generišemo PDF koristeći odgovarajući blade šablon iz resources/views/reports
+        $pdf = Pdf::loadView('reports.daily_finance_report_pdf', $this->data);
 
-        // Vraća email sa PDF izvještajem u prilogu
-        return $this->subject($title)
-            ->view('emails.daily_finance_report')
-            ->attachData($pdf->output(), 'dnevni_finansijski_izvjestaj.pdf', [
-                'mime' => 'application/pdf',
-            ]);
+        // Vraćamo mail sa subject-om i pdf-om u atačmentu
+        return $this->subject('Dnevni finansijski izvještaj')
+            ->text('emails.empty') // Poruka u tijelu maila (možeš promijeniti po potrebi)
+            ->attachData(
+                $pdf->output(), 
+                'dnevni_finansijski_izvjestaj.pdf', 
+                ['mime' => 'application/pdf']
+            );
     }
 }

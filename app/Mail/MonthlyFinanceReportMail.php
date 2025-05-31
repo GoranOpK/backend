@@ -7,46 +7,34 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-/**
- * Klasa za slanje mjesečnog finansijskog izvještaja na email.
- * PDF izvještaj se generiše i automatski šalje kao atačment.
- */
 class MonthlyFinanceReportMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $month;
-    public $year;
-    public $financeData;
+    public $data;
 
     /**
-     * Konstruktor prima mjesec, godinu i podatke finansijskog izvještaja.
+     * Konstruktor - prosljeđuje podatke za izvještaj
      */
-    public function __construct($month, $year, $financeData)
+    public function __construct($data)
     {
-        $this->month = $month;
-        $this->year = $year;
-        $this->financeData = $financeData;
+        $this->data = $data;
     }
 
     /**
-     * Kreira email sa PDF izvještajem kao atačment.
+     * Priprema email sa mjesečnim finansijskim izvještajem u pdf-u
      */
     public function build()
     {
-        $title = "Mjesečni finansijski izvještaj za {$this->month}.{$this->year}";
-        // Kreiranje PDF-a iz blade view-a
-        $pdf = Pdf::loadView('reports.monthly_finance_report_pdf', [
-            'title' => $title,
-            'financeData' => $this->financeData,
-            'month' => $this->month,
-            'year' => $this->year,
-        ]);
+        // Generišemo PDF koristeći odgovarajući blade šablon iz resources/views/reports
+        $pdf = Pdf::loadView('reports.monthly_finance_report_pdf', $this->data);
 
-        return $this->subject($title)
-            ->view('emails.monthly_finance_report')
-            ->attachData($pdf->output(), 'mjesečni_finansijski_izvjestaj.pdf', [
-                'mime' => 'application/pdf',
-            ]);
+        return $this->subject('Mjesečni finansijski izvještaj')
+            ->text('emails.empty')
+            ->attachData(
+                $pdf->output(),
+                'mjesecni_finansijski_izvjestaj.pdf',
+                ['mime' => 'application/pdf']
+            );
     }
 }

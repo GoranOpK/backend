@@ -7,43 +7,34 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-/**
- * Klasa za slanje dnevnog izvještaja o rezervacijama po tipu vozila.
- * PDF izvještaj se generiše i šalje kao atačment uz email.
- */
 class DailyVehicleReservationReportMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $date;
-    public $reservationsByType;
+    public $data;
 
     /**
-     * Konstruktor prima datum i grupisane rezervacije po tipu vozila.
+     * Konstruktor - prosljeđuje podatke za izvještaj
      */
-    public function __construct($date, $reservationsByType)
+    public function __construct($data)
     {
-        $this->date = $date;
-        $this->reservationsByType = $reservationsByType;
+        $this->data = $data;
     }
 
     /**
-     * Kreira email sa PDF izvještajem u prilogu.
+     * Priprema email sa dnevnim izvještajem o rezervacijama po tipu vozila u pdf-u
      */
     public function build()
     {
-        $title = "Dnevni izvještaj o rezervacijama po tipu vozila za {$this->date}";
-        // Generisanje PDF-a iz blade view-a
-        $pdf = Pdf::loadView('reports.vehicle_reservation_report_pdf', [
-            'title' => $title,
-            'reservationsByType' => $this->reservationsByType,
-            'date' => $this->date,
-        ]);
+        // Generišemo PDF koristeći odgovarajući blade šablon iz resources/views/reports
+        $pdf = Pdf::loadView('reports.daily_vehicle_reservation_report_pdf', $this->data);
 
-        return $this->subject($title)
-            ->view('emails.daily_vehicle_reservation_report')
-            ->attachData($pdf->output(), 'dnevni_izvjestaj_rezervacije_vozila.pdf', [
-                'mime' => 'application/pdf',
-            ]);
+        return $this->subject('Dnevni izvještaj o rezervacijama po tipu vozila')
+            ->text('emails.empty')
+            ->attachData(
+                $pdf->output(),
+                'dnevni_izvjestaj_rezervacije_po_voznom_parku.pdf',
+                ['mime' => 'application/pdf']
+            );
     }
 }

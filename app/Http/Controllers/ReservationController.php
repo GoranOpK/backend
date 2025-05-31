@@ -8,6 +8,10 @@ use App\Services\SlotService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
+// Dodajemo neophodne klase za slanje maila
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendInvoiceToUserMail;
+
 class ReservationController extends Controller
 {
     // Servis za rad sa slotovima (terminima)
@@ -86,10 +90,32 @@ class ReservationController extends Controller
         // Kreiranje rezervacije u bazi
         $reservation = Reservation::create($validated);
 
+        // --- AUTOMATSKO SLANJE MAILA KORISNIKU NAKON USPJEŠNOG PLAĆANJA ---
+        // Ovdje šaljemo korisniku račun i potvrdu čim je rezervacija potvrđena i kada je status "confirmed"
+        if ($reservation->status === 'confirmed') {
+            // Slanje maila korisniku na email koji je unio prilikom rezervacije, sa dva PDF atačmenta
+            Mail::to($reservation->email)->send(new SendInvoiceToUserMail($reservation));
+        }
+
         return response()->json([
             'message' => 'Reservation created successfully',
             'reservation' => $reservation,
         ], 201);
+    }
+
+    // Metoda za slanje računa i potvrde mailom korisniku na osnovu ID-a rezervacije
+    public function sendInvoiceToUser($id)
+    {
+        $reservation = Reservation::findOrFail($id);
+
+        if (!$reservation->email) {
+            return response()->json(['error' => 'Email adresa nije pronađena za ovu rezervaciju.'], 422);
+        }
+
+        // Slanje maila korisniku na email koji je unio prilikom rezervacije, sa dva PDF atačmenta
+        Mail::to($reservation->email)->send(new SendInvoiceToUserMail($reservation));
+
+        return response()->json(['success' => 'Invoice and payment confirmation sent to user email.']);
     }
 
     // Ažuriranje postojeće rezervacije
@@ -111,6 +137,15 @@ class ReservationController extends Controller
         ]);
 
         $reservation->update($validated);
+
+        // Ako se status promijeni na 'confirmed', šaljemo automatski mail sa računom i potvrdom
+        if (
+            isset($validated['status']) &&
+            $validated['status'] === 'confirmed' &&
+            $reservation->email
+        ) {
+            Mail::to($reservation->email)->send(new SendInvoiceToUserMail($reservation));
+        }
 
         return response()->json([
             'message' => 'Reservation updated successfully',

@@ -7,46 +7,34 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-/**
- * Klasa za slanje mjesečnog izvještaja o rezervacijama po tipu vozila.
- * PDF izvještaj se automatski generiše i šalje kao atačment.
- */
 class MonthlyVehicleReservationReportMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $month;
-    public $year;
-    public $reservationsByType;
+    public $data;
 
     /**
-     * Konstruktor prima mjesec, godinu i grupisane rezervacije po tipu vozila.
+     * Konstruktor - prosljeđuje podatke za izvještaj
      */
-    public function __construct($month, $year, $reservationsByType)
+    public function __construct($data)
     {
-        $this->month = $month;
-        $this->year = $year;
-        $this->reservationsByType = $reservationsByType;
+        $this->data = $data;
     }
 
     /**
-     * Kreira email i prilaže PDF izvještaj kao atačment.
+     * Priprema email sa mjesečnim izvještajem o rezervacijama po tipu vozila u pdf-u
      */
     public function build()
     {
-        $title = "Mjesečni izvještaj o rezervacijama po tipu vozila za {$this->month}.{$this->year}";
-        // Generisanje PDF-a iz blade view-a
-        $pdf = Pdf::loadView('reports.vehicle_reservation_report_pdf', [
-            'title' => $title,
-            'reservationsByType' => $this->reservationsByType,
-            'month' => $this->month,
-            'year' => $this->year,
-        ]);
+        // Generišemo PDF koristeći odgovarajući blade šablon iz resources/views/reports
+        $pdf = Pdf::loadView('reports.monthly_vehicle_reservation_report_pdf', $this->data);
 
-        return $this->subject($title)
-            ->view('emails.monthly_vehicle_reservation_report')
-            ->attachData($pdf->output(), 'mjesečni_izvjestaj_rezervacije_vozila.pdf', [
-                'mime' => 'application/pdf',
-            ]);
+        return $this->subject('Mjesečni izvještaj o rezervacijama po tipu vozila')
+            ->text('emails.empty')
+            ->attachData(
+                $pdf->output(),
+                'mjesecni_izvjestaj_rezervacije_po_voznom_parku.pdf',
+                ['mime' => 'application/pdf']
+            );
     }
 }
