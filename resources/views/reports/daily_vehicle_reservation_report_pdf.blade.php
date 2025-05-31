@@ -2,9 +2,9 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>{{ $title ?? 'Izvještaj o rezervacijama po tipu vozila' }}</title>
+    <title>{{ $title ?? 'Dnevni izvještaj o rezervacijama po tipu vozila' }}</title>
     <style>
-        /* Stilovi za tabelu i tekst u PDF-u */
+        /* Stilovi za PDF prikaz */
         body { font-family: DejaVu Sans, Arial, sans-serif; }
         table { border-collapse: collapse; width: 100%; margin-top: 24px; }
         th, td { border: 1px solid #cccccc; padding: 8px 12px; text-align: left; }
@@ -13,17 +13,9 @@
 </head>
 <body>
     <!-- Naslov izvještaja -->
-    <h2>{{ $title ?? 'Izvještaj o rezervacijama po tipu vozila' }}</h2>
-    <!-- Dinamički prikaz perioda izvještaja -->
-    @if(isset($date))
-        <p>Datum: {{ $date }}</p>
-    @endif
-    @if(isset($month) && isset($year))
-        <p>Mjesec: {{ $month }} / {{ $year }}</p>
-    @endif
-    @if(isset($year) && !isset($month))
-        <p>Godina: {{ $year }}</p>
-    @endif
+    <h2>{{ $title ?? 'Dnevni izvještaj o rezervacijama po tipu vozila' }}</h2>
+    <!-- Prikaz datuma izvještaja -->
+    <p>Datum: {{ $date }}</p>
     <table>
         <thead>
             <tr>
@@ -32,11 +24,11 @@
             </tr>
         </thead>
         <tbody>
-        <!-- Petlja kroz sve vrste vozila i prikaz broja rezervacija za svaku -->
+        <!-- Prikaz svih tipova vozila i broja rezervacija za svaki tip -->
         @foreach ($reservationsByType as $row)
             <tr>
                 <td>
-                    <!-- Prikaz imena tipa vozila -->
+                    <!-- Prikaz imena tipa vozila, provjerava više mogućih polja u objektu -->
                     @if(isset($row->tip_vozila))
                         {{ $row->tip_vozila }}
                     @elseif(isset($row->vehicleType) && isset($row->vehicleType->name))
@@ -46,7 +38,7 @@
                     @endif
                 </td>
                 <td>
-                    <!-- Prikaz broja rezervacija za taj tip vozila -->
+                    <!-- Prikaz broja rezervacija za taj tip vozila, provjerava više mogućih polja -->
                     @if(isset($row->broj_rezervacija))
                         {{ $row->broj_rezervacija }}
                     @elseif(isset($row->count))
