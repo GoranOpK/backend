@@ -15,7 +15,14 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        // Validacija podataka
+        $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        // Priprema kredencijala za autentikaciju
+        $credentials = $request->only('username', 'password');
 
         if (Auth::guard('admin')->attempt($credentials)) {
             // Uspješan login
@@ -24,7 +31,7 @@ class LoginController extends Controller
 
         // Neuspješan login
         return back()->withErrors([
-            'email' => 'Pogrešan email ili lozinka.',
+            'username' => 'Pogrešno korisničko ime ili lozinka.',
         ])->withInput();
     }
 

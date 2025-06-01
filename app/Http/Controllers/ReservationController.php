@@ -17,17 +17,59 @@ class ReservationController extends Controller
     // Servis za rad sa slotovima (terminima)
     protected $slotService;
 
-    // Prikaz svih rezervacija
-    public function index()
+    // Konstruktor - injektuje servis za slotove
+    public function __construct(SlotService $slotService)
+{
+    $this->slotService = $slotService;
+
+    // Samo admini koji NISU admin_readonly smiju praviti, mijenjati i brisati
+    $this->middleware('role:admin|superadmin')->only(['store', 'update', 'destroy', 'reserve']);
+}
+
+    // Prikaz svih rezervacija sa mogućnošću filtriranja po slot vremenu
+    public function index(Request $request)
     {
-        $reservations = Reservation::all();
-        return response()->json($reservations, 200);
+        // Pravimo query objekat za rezervacije
+        $query = Reservation::query();
+
+        // Ako je korisnik readonly admin, prikazujemo samo osnovne podatke
+        if (auth()->user() && auth()->user()->hasRole('admin_readonly')) {
+            // Prikazujemo samo tip vozila, tablice, slot i tip slota
+            $query->select('vehicle_type_id', 'license_plate', 'time_slot_id', 'type', 'reservation_date');
+        }
+
+        // Ako postoji filter za vrijeme termina, primijeni ga
+        if ($request->has('slot_time') && !empty($request->slot_time)) {
+            // slot_time se očekuje u formatu 'Y-m-d\TH:i' pa ga konvertujemo u 'H:i:s'
+            try {
+                $slotTime = Carbon::parse($request->slot_time)->format('H:i:s');
+            } catch (\Exception $e) {
+                $slotTime = $request->slot_time;
+            }
+            // Filtriramo po povezanom TimeSlot modelu
+            $query->whereHas('timeslot', function ($q) use ($slotTime) {
+                $q->where('start_time', $slotTime);
+            });
+        }
+
+        $reservations = $query->get();
+
+        // Ako koristiš API vraćaj JSON, ako koristiš blade vraćaj view
+        // return response()->json($reservations, 200);
+        return view('reservations.index', compact('reservations'));
     }
 
     // Prikaz pojedinačne rezervacije po ID-u
     public function show($id)
     {
         $reservation = Reservation::findOrFail($id);
+
+        // Ako je korisnik readonly admin, prikazujemo samo osnovne podatke
+        if (auth()->user() && auth()->user()->hasRole('admin_readonly')) {
+            // Prikazujemo samo tip vozila, tablice i slot info (možeš proširiti po potrebi)
+            $reservation = $reservation->only(['vehicle_type_id', 'license_plate', 'time_slot_id', 'type', 'reservation_date']);
+        }
+
         return response()->json($reservation, 200);
     }
 
@@ -36,7 +78,7 @@ class ReservationController extends Controller
     {
         // Validacija podataka iz zahtjeva
         $validated = $request->validate([
-            'time_slot_id'      => 'required|integer|exists:time_slots,id', // ID termina
+            'time_slot_id'      => 'required|integer|exists:list_of_time_slots,id', // ID termina
             'reservation_date'  => 'required|date',                         // Datum rezervacije
             'type'              => 'required|string|in:drop_off,pick_up',   // Tip rezervacije (ostavljanje ili preuzimanje)
             'user_name'         => 'required|string|max:255',               // Ime korisnika
@@ -45,7 +87,6 @@ class ReservationController extends Controller
             'vehicle_type_id'   => 'required|integer|exists:vehicle_types,id', // Tip vozila
             'email'             => 'required|email|max:255',                // Email korisnika
             'status'            => 'sometimes|string|in:pending,confirmed,canceled', // Status rezervacije
-            
         ]);
 
         // --- Pravilo 1: dozvoli samo rezervaciju za isti dan (drop off i pick up) ---
@@ -166,14 +207,17 @@ class ReservationController extends Controller
     public function byDate(Request $request)
     {
         $date = $request->query('date');
-        $reservations = Reservation::whereDate('reservation_date', $date)->get();
-        return response()->json($reservations);
-    }
 
-    // Konstruktor - injektuje servis za slotove
-    public function __construct(SlotService $slotService)
-    {
-        $this->slotService = $slotService;
+        // Ako je korisnik readonly admin, prikazujemo samo tip vozila, tablice i slot info
+        if (auth()->user() && auth()->user()->hasRole('admin_readonly')) {
+            $reservations = Reservation::whereDate('reservation_date', $date)
+                ->select('vehicle_type_id', 'license_plate', 'time_slot_id', 'type', 'reservation_date')
+                ->get();
+        } else {
+            $reservations = Reservation::whereDate('reservation_date', $date)->get();
+        }
+
+        return response()->json($reservations);
     }
 
     // Prikaz svih slotova (termina) za određeni datum
