@@ -63,35 +63,37 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Prikaz PDF izvještaja - koristi servis ili kontroler za izvještaje
         Route::get('izvjestaj', [ReportController::class, 'generate'])->name('report');
 
-        // ========== TEST/DEV RUTE (ukloni u produkciji) ==========
+        // ========== TEST/DEV RUTE (ukloni ili zaštiti u produkciji) ==========
+        if (app()->environment('local')) {
+            // Testiranje sesije
+            Route::get('/test-session', function () {
+                session(['key' => 'value']);
+                return session('key');
+            });
 
-        // Testiranje sesije
-        Route::get('/test-session', function () {
-            session(['key' => 'value']);
-            return session('key');
-        });
+            // Testiranje čuvanja kolačića
+            Route::get('/test-encrypt-cookie', function () {
+                cookie()->queue(cookie('test_cookie', 'test_value', 10));
+                return response()->json(['message' => 'Cookie set!']);
+            });
 
-        // Testiranje čuvanja kolačića
-        Route::get('/test-encrypt-cookie', function () {
-            cookie()->queue(cookie('test_cookie', 'test_value', 10));
-            return response()->json(['message' => 'Cookie set!']);
-        });
+            // Testiranje čitanja kolačića
+            Route::get('/test-decrypt-cookie', function () {
+                $cookieValue = request()->cookie('test_cookie');
+                return response()->json(['cookie_value' => $cookieValue]);
+            });
 
-        // Testiranje čitanja kolačića
-        Route::get('/test-decrypt-cookie', function () {
-            $cookieValue = request()->cookie('test_cookie');
-            return response()->json(['cookie_value' => $cookieValue]);
-        });
+            // Testiranje CSRF zaštite (bez tokena)
+            Route::middleware(['web'])->post('/ruta-bez-tokena', function () {
+                return response()->json(['message' => 'Zahtjev bez CSRF tokena']);
+            });
 
-        // Testiranje CSRF zaštite (bez tokena)
-        Route::middleware(['web'])->post('/ruta-bez-tokena', function () {
-            return response()->json(['message' => 'Zahtjev bez CSRF tokena']);
-        });
-
-        // Testiranje CSRF zaštite (sa tokenom)
-        Route::post('/ruta-sa-tokenom', function () {
-            return response()->json(['message' => 'Zahtjev sa CSRF tokenom'], 200);
-        });
+            // Testiranje CSRF zaštite (sa tokenom)
+            Route::post('/ruta-sa-tokenom', function () {
+                return response()->json(['message' => 'Zahtjev sa CSRF tokenom'], 200);
+            });
+        }
+        // ========== KRAJ TEST/DEV RUTA ==========
 
     }); // end middleware('auth:admin')
 
@@ -103,4 +105,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
 |--------------------------------------------------------------------------
 | Sve test/development rute (test-session, test-cookie, csrf...) OBAVEZNO ukloni
 | ili dodatno zaštiti prije nego što aplikaciju postaviš u produkciju!
+| Preporuka: koristi uslov app()->environment('local') da se ove rute izvršavaju
+| samo u razvojnom okruženju.
 */

@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
   calendar.render();
 
   // Fetch vehicle categories from API and populate select
-  fetch('http://192.168.115.106:8000/api/vehicle-types')
+  fetch('https://192.168.115.106:8000/api/vehicle-types')
     .then(res => res.json())
     .then(data => {
       const select = document.getElementById('vehicle_type_id');
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
 function fetchAllTimeSlots() {
-  fetch('http://192.168.115.106:8000/api/time-slots')
+  fetch('https://192.168.115.106:8000/api/time-slots')
     .then(res => res.json())
     .then(data => {
       // Example: log to console or display in a table
@@ -74,7 +74,7 @@ function fetchAllTimeSlots() {
 }
 
 function fetchReservedSlots(date, callback) {
-  fetch('http://192.168.115.106:8000/api/timeslots/available?date=' + encodeURIComponent(date), {
+  fetch('https://192.168.115.106:8000/api/timeslots/available?date=' + encodeURIComponent(date), {
     headers: {
       'Accept': 'application/json'
     }

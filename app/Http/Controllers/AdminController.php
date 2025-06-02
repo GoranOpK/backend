@@ -40,6 +40,11 @@ class AdminController extends Controller
      */
     public function store(Request $request)
     {
+        // Blokada readonly admina
+        if (auth()->check() && auth()->user()->role === 'admin_readonly') {
+            return response()->json(['message' => 'Readonly admin ne može menjati podatke.'], 403);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:admins|max:255',
@@ -61,6 +66,11 @@ class AdminController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // Blokada readonly admina
+        if (auth()->check() && auth()->user()->role === 'admin_readonly') {
+            return response()->json(['message' => 'Readonly admin ne može menjati podatke.'], 403);
+        }
+
         $admin = Admin::findOrFail($id);
 
         $validated = $request->validate([
@@ -86,6 +96,11 @@ class AdminController extends Controller
      */
     public function destroy($id)
     {
+        // Blokada readonly admina
+        if (auth()->check() && auth()->user()->role === 'admin_readonly') {
+            return response()->json(['message' => 'Readonly admin ne može menjati podatke.'], 403);
+        }
+
         $admin = Admin::findOrFail($id);
         $admin->delete();
         return response()->json(['message' => 'Admin deleted successfully'], 200);

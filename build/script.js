@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
   calendar.render();
 
   // Fetch vehicle categories from API and populate select
-  fetch('http://192.168.115.106:8000/api/vehicle-types')
+  fetch('https://192.168.115.106:8000/api/vehicle-types')
     .then(res => res.json())
     .then(data => {
       const select = document.getElementById('vehicle_type_id');
@@ -62,19 +62,17 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
 function fetchAllTimeSlots() {
-  fetch('http://192.168.115.106:8000/api/time-slots')
+  fetch('https://192.168.115.106:8000/api/time-slots')
     .then(res => res.json())
     .then(data => {
       // Example: log to console or display in a table
       console.log(data);
-      // To display, loop through data and add rows to a table
-      // Example:
-      // data.forEach(slot => { ... });
+      
     });
 }
 
 function fetchReservedSlots(date, callback) {
-  fetch('http://192.168.115.106:8000/api/timeslots/available?date=' + encodeURIComponent(date), {
+  fetch('https://192.168.115.106:8000/api/timeslots/available?date=' + encodeURIComponent(date), {
     headers: {
       'Accept': 'application/json'
     }
@@ -87,80 +85,75 @@ function fetchReservedSlots(date, callback) {
     .catch(() => callback([]));
 }
 
+function fetchAvailableSlotsForDate(date, callback) {
+  fetch('https://192.168.115.106:8000/api/time-slots')
+    .then(res => res.json())
+    .then(slots => {
+      
+      const checks = slots.map(slot =>
+        fetch(`https://192.168.115.106:8000/api/days/${date}/slots/availability/${slot.id}`)
+          .then(res => res.json())
+          .then(avail => avail.available ? slot : null)
+      );
+      Promise.all(checks).then(results => {
+        
+        callback(results.filter(Boolean));
+      });
+    });
+}
+
 document.getElementById('reservation_date').addEventListener('change', function () {
   const date = this.value;
-  fetchReservedSlots(date, function(reservedSlots) {
-    populateTimeSlotSelect('arrival-time-slot', reservedSlots);
-    populateTimeSlotSelect('departure-time-slot', reservedSlots);
+  fetchAvailableSlotsForDate(date, function(availableSlots) {
+    populateTimeSlotSelect('arrival-time-slot', availableSlots.map(s => s.time));
+    populateTimeSlotSelect('departure-time-slot', availableSlots.map(s => s.time));
   });
 });
 
-  window.reserveSlot = function () {
+  async function reserveSlot() {
     const reservationDate = document.getElementById('reservation_date').value;
-    const arrivalTime = document.getElementById('arrival-time-slot').value;
-    const departureTime = document.getElementById('departure-time-slot').value;
-    const registration = document.getElementById('registration-input').value.trim();
-    const country = document.getElementById('country-input').value.trim();
+    const arrivalTimeStr = document.getElementById('arrival-time-slot').value; // npr. "08:00"
     const company = document.getElementById('company_name').value.trim();
+    const country = document.getElementById('country-input').value.trim();
+    const registration = document.getElementById('registration-input').value.trim();
     const email = document.getElementById('email').value.trim();
     const vehicleType = document.getElementById('vehicle_type_id').value;
-    const agreementChecked = document.getElementById('user_agreement').checked;
-    const agreementError = document.getElementById('agreement-error');
 
-    if (!reservationDate || !arrivalTime || !departureTime) {
-      alert('Please select a date and both arrival and departure times.');
+    
+    const slots = await fetch('https://192.168.115.106:8000/api/time-slots').then(res => res.json());
+    const arrivalSlot = slots.find(slot => slot.time === arrivalTimeStr);
+    if (!arrivalSlot) {
+      alert('Nije pronađen odgovarajući vremenski slot!');
       return;
-    }
-    if (!registration) {
-      alert('Please enter the registration.');
-      return;
-    }
-    if (!country) {
-      alert('Please enter the country of origin.');
-      return;
-    }
-    if (!company) {
-      alert('Please enter the company name.');
-      return;
-    }
-    if (!email) {
-      alert('Please enter your email.');
-      return;
-    }
-    if (!vehicleType) {
-      alert('Please select a vehicle category.');
-      return;
-    }
-    if (!agreementChecked) {
-      agreementError.style.display = 'inline';
-      return;
-    } else {
-      agreementError.style.display = 'none';
     }
 
-    fetch('/api/reservations', {
+    
+    const data = {
+      time_slot_id: arrivalSlot.id,
+      reservation_date: reservationDate,
+      type: "drop_off", 
+      user_name: company,
+      country: country,
+      license_plate: registration,
+      vehicle_type_id: vehicleType,
+      email: email
+    };
+
+    
+    fetch('https://192.168.115.106:8000/api/reservations/reserve', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        date: reservationDate,
-        arrival_time: arrivalTime,
-        departure_time: departureTime,
-        registration,
-        country,
-        company,
-        email,
-        vehicle_type_id: vehicleType
-      })
+      body: JSON.stringify(data)
     })
       .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          alert('Reservation successful!');
+      .then(response => {
+        if (response.success) {
+          alert('Rezervacija uspješna!');
         } else {
-          alert('Error reserving slot');
+          alert('Greška prilikom rezervacije!');
         }
       });
-  };
+  }
 
   document.getElementById('show-terms').addEventListener('click', function(e) {
     e.preventDefault();

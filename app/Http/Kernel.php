@@ -63,7 +63,7 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class, // Validacija potpisanih URL-ova
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class, // Ograničenje broja zahtjeva
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class, // Provjera da li je email verifikovan
-
+        'prevent.readonly' => \App\Http\Middleware\PreventReadonlyAdmin::class,
         // Prilagođeni middleware za provjeru administratorskog pristupa:
         'admin' => \App\Http\Middleware\AuthorizeAdmin::class, // Provjera da li je korisnik administrator
 

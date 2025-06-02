@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -21,6 +22,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Forsiraj HTTPS na produkciji
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
+
         // Sluša sve SQL upite koji se izvršavaju kroz aplikaciju
         DB::listen(function ($query) {
             // Provjera da li je upit spor, npr. traje duže od 100ms
