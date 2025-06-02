@@ -64,6 +64,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class, // Ograničenje broja zahtjeva
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class, // Provjera da li je email verifikovan
         'prevent.readonly' => \App\Http\Middleware\PreventReadonlyAdmin::class,
+        'custom.auth' => AuthenticateCustom::class,
         // Prilagođeni middleware za provjeru administratorskog pristupa:
         'admin' => \App\Http\Middleware\AuthorizeAdmin::class, // Provjera da li je korisnik administrator
 
