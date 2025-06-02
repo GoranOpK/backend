@@ -12,15 +12,11 @@ use App\Mail\SendInvoiceToUserMail;
 
 class ReservationController extends Controller
 {
-    // Servis za rad sa slotovima (terminima)
     protected $slotService;
 
-    // Konstruktor - injektuje servis za slotove
     public function __construct(SlotService $slotService)
     {
         $this->slotService = $slotService;
-
-        // Dozvoljene izmjene samo adminima; dodatno provjeravamo readonly admina u samim metodama
         $this->middleware('role:admin|superadmin')->only(['store', 'update', 'destroy', 'reserve']);
     }
 
@@ -29,12 +25,10 @@ class ReservationController extends Controller
     {
         $query = Reservation::query();
 
-        // Ako je korisnik readonly admin, prikazujemo samo osnovne podatke
         if (auth()->user() && auth()->user()->hasRole('admin_readonly')) {
             $query->select('vehicle_type_id', 'license_plate', 'time_slot_id', 'type', 'reservation_date');
         }
 
-        // Filtriranje po slot vremenu, ako postoji filter
         if ($request->has('slot_time') && !empty($request->slot_time)) {
             try {
                 $slotTime = Carbon::parse($request->slot_time)->format('H:i:s');
@@ -47,9 +41,7 @@ class ReservationController extends Controller
         }
 
         $reservations = $query->get();
-
-        // API: return response()->json($reservations, 200);
-        return view('reservations.index', compact('reservations'));
+        return response()->json($reservations, 200);
     }
 
     // Prikaz pojedinačne rezervacije po ID-u
@@ -57,7 +49,6 @@ class ReservationController extends Controller
     {
         $reservation = Reservation::findOrFail($id);
 
-        // Ako je readonly admin, prikazi samo osnovne podatke
         if (auth()->user() && auth()->user()->hasRole('admin_readonly')) {
             $reservation = $reservation->only(['vehicle_type_id', 'license_plate', 'time_slot_id', 'type', 'reservation_date']);
         }
@@ -65,11 +56,10 @@ class ReservationController extends Controller
         return response()->json($reservation, 200);
     }
 
-    // Kreiranje nove rezervacije
+    // Kreiranje nove rezervacije (API)
     public function store(Request $request)
     {
-        // Blokada readonly admina (osim što postoji i middleware)
-        if (auth()->user()->hasRole('admin_readonly')) {
+        if (auth()->user() && auth()->user()->hasRole('admin_readonly')) {
             return response()->json(['message' => 'Readonly admin ne može menjati podatke.'], 403);
         }
 
@@ -114,7 +104,6 @@ class ReservationController extends Controller
             ], 422);
         }
 
-        // Ako nije definisan status, postavi na "pending"
         $validated['status'] = $validated['status'] ?? 'pending';
 
         $reservation = Reservation::create($validated);
@@ -125,6 +114,66 @@ class ReservationController extends Controller
         }
 
         return response()->json([
+            'success' => true,
+            'message' => 'Reservation created successfully',
+            'reservation' => $reservation,
+        ], 201);
+    }
+
+    // Nova API metoda za rezervaciju iz frontenda
+    public function reserve(Request $request)
+    {
+        // Nema potrebe za authentikacijom za korisničku rezervaciju, ali možeš dodati proveru po potrebi.
+        // SVI podaci dolaze iz frontenda!
+        $validated = $request->validate([
+            'time_slot_id'      => 'required|integer|exists:list_of_time_slots,id',
+            'reservation_date'  => 'required|date',
+            'type'              => 'required|string|in:drop_off,pick_up',
+            'user_name'         => 'required|string|max:255',
+            'country'           => 'required|string|max:100',
+            'license_plate'     => 'required|string|max:20',
+            'vehicle_type_id'   => 'required|integer|exists:vehicle_types,id',
+            'email'             => 'required|email|max:255',
+        ]);
+
+        // Pravilo: max 3 rezervacije po tipu, danu i registarskoj oznaci
+        $date = $validated['reservation_date'];
+        $reg = $validated['license_plate'];
+        $type = $validated['type'];
+
+        $count = Reservation::where([
+            ['license_plate', $reg],
+            ['reservation_date', $date],
+            ['type', $type]
+        ])->count();
+
+        if ($count >= 3) {
+            return response()->json([
+                'success' => false,
+                'message' => "Dozvoljeno je najviše 3 rezervacije za $type za ovu registarsku oznaku na ovaj dan."
+            ], 422);
+        }
+
+        // Pravilo: rezervacija moguća najkasnije minut prije termina
+        $slot = TimeSlot::find($validated['time_slot_id']);
+        if (!$slot) {
+            return response()->json(['success' => false, 'message' => 'Nepostojeći termin!'], 422);
+        }
+        $dateTime = Carbon::parse($date . ' ' . $slot->start_time);
+        if (now()->diffInMinutes($dateTime, false) < 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Rezervacija je moguća najkasnije minut prije termina.'
+            ], 422);
+        }
+
+        $validated['status'] = 'pending';
+        $reservation = Reservation::create($validated);
+
+        // Slanje maila možeš dodati ovde ako treba
+
+        return response()->json([
+            'success' => true,
             'message' => 'Reservation created successfully',
             'reservation' => $reservation,
         ], 201);
@@ -146,8 +195,7 @@ class ReservationController extends Controller
     // Ažuriranje postojeće rezervacije
     public function update(Request $request, $id)
     {
-        // Blokada readonly admina
-        if (auth()->user()->hasRole('admin_readonly')) {
+        if (auth()->user() && auth()->user()->hasRole('admin_readonly')) {
             return response()->json(['message' => 'Readonly admin ne može menjati podatke.'], 403);
         }
 
@@ -185,8 +233,7 @@ class ReservationController extends Controller
     // Brisanje rezervacije
     public function destroy($id)
     {
-        // Blokada readonly admina
-        if (auth()->user()->hasRole('admin_readonly')) {
+        if (auth()->user() && auth()->user()->hasRole('admin_readonly')) {
             return response()->json(['message' => 'Readonly admin ne može menjati podatke.'], 403);
         }
 
@@ -200,6 +247,9 @@ class ReservationController extends Controller
     public function byDate(Request $request)
     {
         $date = $request->query('date');
+        if (!$date) {
+            return response()->json(['error' => 'Date parameter is required.'], 400);
+        }
 
         if (auth()->user() && auth()->user()->hasRole('admin_readonly')) {
             $reservations = Reservation::whereDate('reservation_date', $date)
@@ -218,19 +268,5 @@ class ReservationController extends Controller
         $date = $request->input('date', now()->toDateString());
         $slots = $this->slotService->getSlotsForDate($date);
         return response()->json($slots);
-    }
-
-    // Rezervacija termina preko servisa
-    public function reserve(Request $request)
-    {
-        // Blokada readonly admina
-        if (auth()->user()->hasRole('admin_readonly')) {
-            return response()->json(['message' => 'Readonly admin ne može menjati podatke.'], 403);
-        }
-
-        $date = $request->input('date');
-        $slotId = $request->input('slot_id');
-        $this->slotService->reserveSlot($date, $slotId);
-        return response()->json(['status' => 'success']);
     }
 }
