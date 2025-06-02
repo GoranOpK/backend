@@ -32,10 +32,12 @@ return [
     | Nikad nemoj koristiti '*' u produkciji, već navedi tačno domene!
     |
     */
-    'allowed_origins' => [
-        'http://localhost:3000',      // za lokalni razvoj (npr. React/Vue dev server)
-        'http://192.168.115.106:3000', // za razvoj sa drugog racunara
-        'https://tvoj-frontend.com',  // za produkciju - zamijeni sa tvojim frontend domenom
+     'allowed_origins' => [
+        'http://localhost:3000',           // Lokalni razvoj (React/Vue dev server)
+        'https://localhost:3000',          // Lokalni razvoj preko HTTPS-a
+        'http://192.168.115.106:3000',     // Pristup sa druge mašine preko mreže (http)
+        'https://192.168.115.106:3000',    // Pristup sa druge mašine preko mreže (https)
+        'https://tvoj-frontend.com',        // Produkcija (zamijeni sa stvarnim domenom)
     ],
 
     /*
