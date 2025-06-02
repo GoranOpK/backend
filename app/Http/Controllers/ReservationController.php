@@ -17,17 +17,12 @@ class ReservationController extends Controller
     public function __construct(SlotService $slotService)
     {
         $this->slotService = $slotService;
-        $this->middleware('role:admin|superadmin')->only(['store', 'update', 'destroy', 'reserve']);
     }
 
     // Prikaz svih rezervacija sa opcijom filtriranja po slot vremenu
     public function index(Request $request)
     {
         $query = Reservation::query();
-
-        if (auth()->user() && auth()->user()->hasRole('admin_readonly')) {
-            $query->select('vehicle_type_id', 'license_plate', 'time_slot_id', 'type', 'reservation_date');
-        }
 
         if ($request->has('slot_time') && !empty($request->slot_time)) {
             try {
@@ -48,21 +43,12 @@ class ReservationController extends Controller
     public function show($id)
     {
         $reservation = Reservation::findOrFail($id);
-
-        if (auth()->user() && auth()->user()->hasRole('admin_readonly')) {
-            $reservation = $reservation->only(['vehicle_type_id', 'license_plate', 'time_slot_id', 'type', 'reservation_date']);
-        }
-
         return response()->json($reservation, 200);
     }
 
     // Kreiranje nove rezervacije (API)
     public function store(Request $request)
     {
-        if (auth()->user() && auth()->user()->hasRole('admin_readonly')) {
-            return response()->json(['message' => 'Readonly admin ne može menjati podatke.'], 403);
-        }
-
         $validated = $request->validate([
             'time_slot_id'      => 'required|integer|exists:list_of_time_slots,id',
             'reservation_date'  => 'required|date',
@@ -123,8 +109,6 @@ class ReservationController extends Controller
     // Nova API metoda za rezervaciju iz frontenda
     public function reserve(Request $request)
     {
-        // Nema potrebe za authentikacijom za korisničku rezervaciju, ali možeš dodati proveru po potrebi.
-        // SVI podaci dolaze iz frontenda!
         $validated = $request->validate([
             'time_slot_id'      => 'required|integer|exists:list_of_time_slots,id',
             'reservation_date'  => 'required|date',
@@ -195,10 +179,6 @@ class ReservationController extends Controller
     // Ažuriranje postojeće rezervacije
     public function update(Request $request, $id)
     {
-        if (auth()->user() && auth()->user()->hasRole('admin_readonly')) {
-            return response()->json(['message' => 'Readonly admin ne može menjati podatke.'], 403);
-        }
-
         $reservation = Reservation::findOrFail($id);
 
         $validated = $request->validate([
@@ -233,10 +213,6 @@ class ReservationController extends Controller
     // Brisanje rezervacije
     public function destroy($id)
     {
-        if (auth()->user() && auth()->user()->hasRole('admin_readonly')) {
-            return response()->json(['message' => 'Readonly admin ne može menjati podatke.'], 403);
-        }
-
         $reservation = Reservation::findOrFail($id);
         $reservation->delete();
 
@@ -251,13 +227,7 @@ class ReservationController extends Controller
             return response()->json(['error' => 'Date parameter is required.'], 400);
         }
 
-        if (auth()->user() && auth()->user()->hasRole('admin_readonly')) {
-            $reservations = Reservation::whereDate('reservation_date', $date)
-                ->select('vehicle_type_id', 'license_plate', 'time_slot_id', 'type', 'reservation_date')
-                ->get();
-        } else {
-            $reservations = Reservation::whereDate('reservation_date', $date)->get();
-        }
+        $reservations = Reservation::whereDate('reservation_date', $date)->get();
 
         return response()->json($reservations);
     }

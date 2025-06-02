@@ -42,6 +42,7 @@ class Kernel extends HttpKernel
         'api' => [
             'throttle:api', // Ograničenje broja zahtjeva po API korisniku
             \Illuminate\Routing\Middleware\SubstituteBindings::class, // Zamjena parametara ruta za API zahtjeve
+            \Illuminate\Http\Middleware\HandleCors::class,
         ],
     ];
 
@@ -69,8 +70,8 @@ class Kernel extends HttpKernel
         'admin' => \App\Http\Middleware\AuthorizeAdmin::class, // Provjera da li je korisnik administrator
 
         // Prilagođeni middleware za provjeru uloga
-        'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
-        'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
-        'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class, // Dodato za provjeru uloga
+        // 'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
+        // 'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
+        // 'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class, // Dodato za provjeru uloga
     ];
 }

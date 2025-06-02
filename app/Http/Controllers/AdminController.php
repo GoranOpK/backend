@@ -11,8 +11,6 @@ class AdminController extends Controller
 {
     /**
      * Prikazuje sve admine.
-     *
-     * @return \Illuminate\Http\JsonResponse
      */
     public function index()
     {
@@ -22,9 +20,6 @@ class AdminController extends Controller
 
     /**
      * Prikazuje pojedinačnog admina na osnovu ID-a.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
      */
     public function show($id)
     {
@@ -34,24 +29,16 @@ class AdminController extends Controller
 
     /**
      * Kreira novog admina.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
-        // Blokada readonly admina
-        if (auth()->check() && auth()->user()->role === 'admin_readonly') {
-            return response()->json(['message' => 'Readonly admin ne može menjati podatke.'], 403);
-        }
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:admins|max:255',
             'password' => 'required|string|min:6',
         ]);
 
-        $validated['password'] = Hash::make($validated['password']); // Šifrira lozinku
+        $validated['password'] = Hash::make($validated['password']);
 
         $admin = Admin::create($validated);
         return response()->json($admin, 201);
@@ -59,18 +46,9 @@ class AdminController extends Controller
 
     /**
      * Ažurira postojeće podatke o adminu.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, $id)
     {
-        // Blokada readonly admina
-        if (auth()->check() && auth()->user()->role === 'admin_readonly') {
-            return response()->json(['message' => 'Readonly admin ne može menjati podatke.'], 403);
-        }
-
         $admin = Admin::findOrFail($id);
 
         $validated = $request->validate([
@@ -79,7 +57,6 @@ class AdminController extends Controller
             'password' => 'sometimes|required|string|min:6',
         ]);
 
-        // Ako se menja password, šifruj ga
         if (isset($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         }
@@ -90,17 +67,9 @@ class AdminController extends Controller
 
     /**
      * Briše admina.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($id)
     {
-        // Blokada readonly admina
-        if (auth()->check() && auth()->user()->role === 'admin_readonly') {
-            return response()->json(['message' => 'Readonly admin ne može menjati podatke.'], 403);
-        }
-
         $admin = Admin::findOrFail($id);
         $admin->delete();
         return response()->json(['message' => 'Admin deleted successfully'], 200);
@@ -108,9 +77,6 @@ class AdminController extends Controller
 
     /**
      * Prijava administratora i generisanje tokena.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
      */
     public function login(Request $request)
     {
@@ -122,19 +88,13 @@ class AdminController extends Controller
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
 
-            // Proveri da li je korisnik admin
-            if ($user->role === 'admin') {
-                $token = $user->createToken('admin-token', ['role:admin'])->plainTextToken;
-
-                return response()->json([
-                    'token' => $token,
-                    'message' => 'Login successful',
-                ], 200);
-            }
+            // NEMA provere role, jer svi su admini iz ove tabele
+            $token = $user->createToken('admin-token')->plainTextToken;
 
             return response()->json([
-                'message' => 'Access restricted to administrators only',
-            ], 403);
+                'token' => $token,
+                'message' => 'Login successful',
+            ], 200);
         }
 
         return response()->json([
