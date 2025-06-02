@@ -34,7 +34,7 @@ BEGIN
 
     -- Provera validnosti tipa vozila
     IF NOT (vehicleTypeId = 1 OR vehicleTypeId = 2 OR vehicleTypeId = 3) THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Tip vozila nije validan.';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid vehicle type.';
     END IF;
 
     -- Provera dostupnosti drop-off slota
