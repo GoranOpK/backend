@@ -98,19 +98,25 @@ class TimeSlotController extends Controller
             return response()->json(['error' => 'Date is required'], 400);
         }
 
-        // Pozovi svoju proceduru ili logiku da proveriš dostupnost slota za taj dan
-        // Primer upita (prilagodi svojoj bazi!):
+        // Izvuci ime tabele na osnovu datuma (format: Ymd, npr. 20250601)
         $table = date('Ymd', strtotime($date));
-        $exists = \DB::select("SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?", [$table])[0]->cnt;
-        if (!$exists) {
+
+        // Proveri da li tabela postoji
+        $exists = \DB::selectOne(
+            "SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?", 
+            [$table]
+        );
+        if (!$exists || $exists->cnt == 0) {
             return response()->json(['error' => 'Tabela za taj datum ne postoji'], 404);
         }
 
-        $row = \DB::select("SELECT available FROM `$table` WHERE time_slot_id = ?", [$slot_id]);
-        if (empty($row)) {
+        // Proveri da li postoji red za dati slot_id u toj tabeli
+        $row = \DB::selectOne("SELECT available FROM `$table` WHERE time_slot_id = ?", [$slot_id]);
+        if (!$row) {
             return response()->json(['error' => 'Taj slot ne postoji za taj datum'], 404);
         }
 
-        return response()->json(['available' => (bool)$row[0]->available]);
+        // Vrati rezultat
+        return response()->json(['available' => (bool)$row->available]);
     }
 }
