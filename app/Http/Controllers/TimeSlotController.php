@@ -60,63 +60,60 @@ class TimeSlotController extends Controller
     }
 
     /**
-     * Vraća sve vremenske slotove. (Prilagođeno jer nema status/type)
+     * Vraća sve slobodne vremenske slotove za dati datum.
      */
     public function availableSlots(Request $request)
     {
-        // Ovde možeš filter po ID-jevima koji su zauzeti za određeni datum, ako ima smisla.
-        // Pošto tvoja tabela nema "status", filtriraćeš samo po zauzetosti u reservations.
-
         $date = $request->query('date');
         if (!$date) {
             return response()->json(['error' => 'Date parameter is required.'], 400);
         }
 
-        // Pronađi slotove koji su rezervisani za taj datum
-        $reservedDropOffSlotIds = \DB::table('reservations')
-            ->where('reservation_date', $date)
-            ->pluck('drop_off_time_slot_id')
-            ->toArray();
+        // Dinamičko određivanje imena tabele za zadati datum (format: Ymd)
+        $table = date('Ymd', strtotime($date));
+        $exists = \DB::selectOne(
+            "SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?",
+            [$table]
+        );
+        if (!$exists || $exists->cnt == 0) {
+            // Ako tabela ne postoji, nema slobodnih slotova
+            return response()->json([]);
+        }
 
-        $reservedPickUpSlotIds = \DB::table('reservations')
-            ->where('reservation_date', $date)
-            ->pluck('pick_up_time_slot_id')
-            ->toArray();
+        // Iz tabele za taj dan izvuci sve slotove koji su available
+        $rows = \DB::select("SELECT time_slot_id FROM `$table` WHERE available = 1");
+        $slotIds = array_map(fn($r) => $r->time_slot_id, $rows);
 
-        $reservedSlotIds = array_unique(array_merge($reservedDropOffSlotIds, $reservedPickUpSlotIds));
+        // Vrati podatke o slotovima (npr. vreme) za te id-jeve
+        $slots = TimeSlot::whereIn('id', $slotIds)->get();
 
-        // Slobodni slotovi su svi koji NISU u rezervisanim
-        $availableSlots = TimeSlot::whereNotIn('id', $reservedSlotIds)->get();
-
-        return response()->json($availableSlots);
+        return response()->json($slots);
     }
 
-    public function availability($slot_id, \Illuminate\Http\Request $request)
+    /**
+     * Proverava dostupnost pojedinačnog vremenskog slota za određeni dan.
+     */
+    public function availability($slot_id, Request $request)
     {
         $date = $request->query('date');
         if (!$date) {
             return response()->json(['error' => 'Date is required'], 400);
         }
 
-        // Izvuci ime tabele na osnovu datuma (format: Ymd, npr. 20250601)
         $table = date('Ymd', strtotime($date));
-
-        // Proveri da li tabela postoji
         $exists = \DB::selectOne(
-            "SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?", 
+            "SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?",
             [$table]
         );
         if (!$exists || $exists->cnt == 0) {
             return response()->json(['error' => 'Tabela za taj datum ne postoji'], 404);
         }
 
-        // Proveri da li postoji red za dati slot_id u toj tabeli
         $row = \DB::selectOne("SELECT available FROM `$table` WHERE time_slot_id = ?", [$slot_id]);
         if (!$row) {
             return response()->json(['error' => 'Taj slot ne postoji za taj datum'], 404);
         }
 
-        // Vrati rezultat
         return response()->json(['available' => (bool)$row->available]);
     }
 }
