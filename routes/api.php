@@ -83,6 +83,11 @@ Route::get('test', fn() => response()->json(['ok' => true]));
 Route::get('testjson', fn() => response()->json(['ok' => true]));
 
 // ---------------------------
+// Dostupnist RUTE
+// ---------------------------
+Route::get('slots/{slot_id}/availability', [TimeSlotController::class, 'availability']);
+
+// ---------------------------
 // NAPOMENA:
 // - Ne trebaš duplirati rute za rezervacije (index, show, destroy, reserve, slots...)
 // - Sva admin zaštita je centralizovana u admin grupi
