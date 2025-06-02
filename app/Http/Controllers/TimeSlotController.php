@@ -90,4 +90,27 @@ class TimeSlotController extends Controller
 
         return response()->json($availableSlots);
     }
+
+    public function availability($slot_id, \Illuminate\Http\Request $request)
+    {
+        $date = $request->query('date');
+        if (!$date) {
+            return response()->json(['error' => 'Date is required'], 400);
+        }
+
+        // Pozovi svoju proceduru ili logiku da proveriš dostupnost slota za taj dan
+        // Primer upita (prilagodi svojoj bazi!):
+        $table = date('Ymd', strtotime($date));
+        $exists = \DB::select("SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?", [$table])[0]->cnt;
+        if (!$exists) {
+            return response()->json(['error' => 'Tabela za taj datum ne postoji'], 404);
+        }
+
+        $row = \DB::select("SELECT available FROM `$table` WHERE time_slot_id = ?", [$slot_id]);
+        if (empty($row)) {
+            return response()->json(['error' => 'Taj slot ne postoji za taj datum'], 404);
+        }
+
+        return response()->json(['available' => (bool)$row[0]->available]);
+    }
 }
