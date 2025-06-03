@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\TimeSlot;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TimeSlotController extends Controller
 {
@@ -12,7 +13,7 @@ class TimeSlotController extends Controller
      */
     public function index()
     {
-        return TimeSlot::paginate(10);
+        return TimeSlot::all();
     }
 
     /**
@@ -61,6 +62,7 @@ class TimeSlotController extends Controller
 
     /**
      * Vraća sve slobodne vremenske slotove za dati datum.
+     * Dropdown će prikazati samo slobodne slotove za taj dan.
      */
     public function availableSlots(Request $request)
     {
@@ -71,17 +73,18 @@ class TimeSlotController extends Controller
 
         // Dinamičko određivanje imena tabele za zadati datum (format: Ymd)
         $table = date('Ymd', strtotime($date));
-        $exists = \DB::selectOne(
+        $exists = DB::selectOne(
             "SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?",
             [$table]
         );
         if (!$exists || $exists->cnt == 0) {
-            // Ako tabela ne postoji, nema slobodnih slotova
-            return response()->json([]);
+            // Ako tabela ne postoji, vrati sve slotove (svi su slobodni)
+            $allSlots = TimeSlot::all();
+            return response()->json($allSlots);
         }
 
         // Iz tabele za taj dan izvuci sve slotove koji su available
-        $rows = \DB::select("SELECT time_slot_id FROM `$table` WHERE available = 1");
+        $rows = DB::select("SELECT time_slot_id FROM `$table` WHERE available = 1");
         $slotIds = array_map(fn($r) => $r->time_slot_id, $rows);
 
         // Vrati podatke o slotovima (npr. vreme) za te id-jeve
@@ -101,17 +104,19 @@ class TimeSlotController extends Controller
         }
 
         $table = date('Ymd', strtotime($date));
-        $exists = \DB::selectOne(
+        $exists = DB::selectOne(
             "SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?",
             [$table]
         );
         if (!$exists || $exists->cnt == 0) {
-            return response()->json(['error' => 'Tabela za taj datum ne postoji'], 404);
+            // Ako tabela ne postoji, slot je slobodan (nije rezervisan)
+            return response()->json(['available' => true]);
         }
 
-        $row = \DB::selectOne("SELECT available FROM `$table` WHERE time_slot_id = ?", [$slot_id]);
+        $row = DB::selectOne("SELECT available FROM `$table` WHERE time_slot_id = ?", [$slot_id]);
         if (!$row) {
-            return response()->json(['error' => 'Taj slot ne postoji za taj datum'], 404);
+            // Ako reda nema, slot je slobodan
+            return response()->json(['available' => true]);
         }
 
         return response()->json(['available' => (bool)$row->available]);

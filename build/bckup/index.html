@@ -11,36 +11,38 @@
 
 <body>
   
-  <header>
-      <img src="logo.png" alt="Kotorbus Logo">
-   </header>
+  <header style="display: flex; align-items: center; justify-content: space-between;">
+  <div style="flex:1;"></div>
+  <img src="logo.png" alt="Kotorbus Logo" style="display:block; margin:auto;">
+  <div style="flex:1; display:flex; justify-content: flex-end; gap:10px; align-items:center;">
+    <img src="gb.png" alt="English" id="lang-en" style="width:32px; height:32px; cursor:pointer;">
+    <img src="mne.png" alt="Crnogorski" id="lang-cg" style="width:32px; height:32px; cursor:pointer;">
+  </div>
+</header>
 
-  <div class="main-container">
+  <div class="main-container" style="display: flex; gap: 40px; align-items: flex-start;">
     <div id="calendar"></div>
-
-    <div id="slot-section">
-      <h3>Pick a date</h3>
+    <div id="slot-section" style="display:block; min-width:320px;">
       <input type="date" id="reservation_date" />
-      <p>Arrival time</p>
+      <h3 id="pick-date-label">Pick a date</h3>
+      <p id="arrival-label">Arrival time</p>
       <select id="arrival-time-slot"></select>
-      <p>Departure time</p>
+      <p id="departure-label">Departure time</p>
       <select id="departure-time-slot"></select>
-      <br>
-      <br>
       <input type="text" id="company_name" placeholder="Company name" required>
       <input type="text" id="country-input" placeholder="Country" required>
       <input type="text" id="registration-input" placeholder="Registration plates" required>
       <input type="email" id="email" placeholder="Email" required>
       <select id="vehicle_type_id" required>
-        <option value="">Select vehicle category</option>
+        <option id="vehicle-category-option" value="">Select vehicle category</option>
       </select>
-      <label style="display:block; margin:10px 0;">
+      <label id="agree-label" style="display:block; margin:10px 0;">
         <input type="checkbox" id="user_agreement" required>
-        I agree to the <a href="#" id="show-terms">terms and conditions</a>.
+        <span id="agree-text">I agree to the</span>
+        <a href="#" id="show-terms">terms and conditions</a>.
       </label>
       <span id="agreement-error" style="color:red; display:none;">You must agree to the terms to reserve a slot.</span>
-      <br>
-      <button onclick="reserveSlot()">Reserve</button>
+      <button id="reserve-btn" onclick="reserveSlot()">Reserve</button>
     </div>
   </div>
 
@@ -49,18 +51,15 @@
     <div class="modal-content">
       <span class="close" id="close-terms">&times;</span>
       <h2>Terms and Conditions</h2>
-      <div style="max-height:300px; overflow-y:auto;">
-        <p>
-          <!-- Your terms and conditions text goes here -->
-          By using this service, you agree to abide by all rules and regulations set forth by Kotorbus. Reservations are subject to availability and may be cancelled or changed at the discretion of the company. Please ensure all information provided is accurate. For full details, contact our support.
-        </p>
+      <div style="max-height:70vh; overflow-y:auto;" id="terms-content">
+        <!-- Leave this empty, JS will fill it -->
       </div>
     </div>
   </div>
   
   <footer>
     <img src="logoop.png" alt="OpKotor" style="height:80px;">
-    <p>Bidonkaktus. TEST3 &copy; 2025 Kotorbus</p>
+    <p>Bidonkaktus 🌵 &copy; 2025 Kotorbus</p>
   </footer>
 <script src="script.js"></script>
 </body>

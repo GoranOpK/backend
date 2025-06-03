@@ -8,20 +8,15 @@ use Illuminate\Http\Request;
 class AuthorizeAdmin
 {
     /**
-     * Obradjuje dolazni zahtjev i osigurava da samo administrator ima pristup.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
+     * Dozvoljava pristup samo korisnicima koji NISU readonly admin ('control').
      */
     public function handle(Request $request, Closure $next)
     {
-        // Provjera da li postoji autentifikovani korisnik i da li je admin.
-        if (!$request->user() || $request->user()->role !== 'admin') {
-            abort(403, 'Unauthorized action.'); // "Neovlašćena akcija"
+        // Provjeri da li postoji autentifikovani korisnik i da NIJE 'control'
+        if (!$request->user() || $request->user()->username === 'control') {
+            abort(403, 'Unauthorized action.');
         }
 
-        // Ako je korisnik admin, zahtjev se prosljeđuje dalje.
         return $next($request);
     }
 }

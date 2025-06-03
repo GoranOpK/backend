@@ -14,9 +14,9 @@ class Admin extends Authenticatable
     // Polja koja se mogu masovno popunjavati
     protected $fillable = [
         'username',          // Ime admina
-        'email',         // Email adresa
-        'password',      // Lozinka
-        'role',          // Polje za ulogu (nije obavezno ako koristiš Spatie)
+        'email',             // Email adresa
+        'password',          // Lozinka
+        'role',              // Polje za ulogu (nije obavezno ako koristiš Spatie)
     ];
 
     // Polja koja se sakrivaju prilikom serijalizacije modela (npr. API odgovor)

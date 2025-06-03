@@ -14,43 +14,48 @@ use App\Http\Controllers\MailController;
 | JAVNE RUTE (korisnici bez logovanja)
 |--------------------------------------------------------------------------
 */
-Route::group([], function () {
-    // Prikaz slotova za određeni dan
-    Route::get('reservations/slots', [ReservationController::class, 'showSlots']);
-
-    // Rezervacija slota (sa throttle zaštitom)
-    Route::post('reservations/reserve', [ReservationController::class, 'reserve'])->middleware('throttle:10,1');
-
-    // Pregled svih vremenskih slotova
-    Route::get('timeslots', [TimeSlotController::class, 'index']);
-
-    // Slobodni slotovi za određeni dan i tip vozila
-    Route::get('timeslots/available', [TimeSlotController::class, 'availableSlots']);
-
-    // Pregled svih tipova vozila
-    Route::apiResource('vehicle-types', VehicleTypeController::class)->only(['index', 'show']);
-
-    // Pregled rezervacija po datumu (npr. za kalendar)
-    Route::get('reservations/by-date', [ReservationController::class, 'byDate']);
-});
+Route::get('reservations/slots', [ReservationController::class, 'showSlots']);
+Route::post('reservations/reserve', [ReservationController::class, 'reserve'])->middleware('throttle:10,1');
+Route::get('timeslots', [TimeSlotController::class, 'index']);
+Route::get('timeslots/available', [TimeSlotController::class, 'availableSlots']);
+Route::apiResource('vehicle-types', VehicleTypeController::class)->only(['index', 'show']);
+Route::get('reservations/by-date', [ReservationController::class, 'byDate']);
 
 /*
 |--------------------------------------------------------------------------
 | ADMIN RUTE (zaštićene, potrebna autentifikacija)
 |--------------------------------------------------------------------------
+|
+| - Svi admini (pravi + readonly "control") mogu gledati podatke (npr. GET).
+| - Samo pravi admin (NIJE name='control') može raditi izmjene (POST/PUT/PATCH/DELETE).
+|--------------------------------------------------------------------------
 */
-Route::middleware(['auth:sanctum', 'admin'])->group(function () {
-    // Upravljanje slotovima (osim index prikaza)
-    Route::apiResource('timeslots', TimeSlotController::class)->except(['index']);
 
-    // Upravljanje rezervacijama (pregled svih, prikaz pojedinačne, brisanje)
-    Route::apiResource('reservations', ReservationController::class)->only(['index', 'show', 'destroy']);
+// Sve admin GET rute koje nisu javne, npr. pregled admin korisnika ili drugih podataka
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Pregled rezervacija (ako NE ŽELIŠ da obični korisnici vide rezervacije svih korisnika)
+    Route::get('reservations', [ReservationController::class, 'index']);
+    Route::get('reservations/{reservation}', [ReservationController::class, 'show']);
+
+    // Pregled admin korisnika (npr. lista)
+    Route::get('admins', [AdminController::class, 'index']);
+
+    // Ostale GET rute po potrebi (koje ne moraju biti javne)...
+});
+
+// Rute koje samo pravi admin može koristiti (NE readonly admin tj. name='control')
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    // Upravljanje slotovima (sve osim prikaza!)
+    Route::apiResource('timeslots', TimeSlotController::class)->except(['index', 'show']);
+
+    // Upravljanje rezervacijama (brisanje)
+    Route::delete('reservations/{reservation}', [ReservationController::class, 'destroy']);
 
     // Upravljanje tipovima vozila (kreiranje, izmjena, brisanje)
     Route::apiResource('vehicle-types', VehicleTypeController::class)->except(['index', 'show']);
 
     // Upravljanje admin korisnicima
-    Route::apiResource('admins', AdminController::class);
+    Route::apiResource('admins', AdminController::class)->except(['index']);
 
     // Promjena statusa rezervacije
     Route::patch('reservations/{id}/status', [ReservationController::class, 'updateStatus']);
@@ -102,10 +107,8 @@ Route::get('slots/{slot_id}/availability', [TimeSlotController::class, 'availabi
 /*
 |--------------------------------------------------------------------------
 | NAPOMENA:
-| - Ne trebaš duplirati rute za rezervacije (index, show, destroy, reserve, slots...)
-| - Sva admin zaštita je centralizovana u admin grupi
-| - Svi javni prikazi su u prvoj grupi
-| - Sve je jasno odvojeno i nema preklapanja
-| - Ako želiš dodatnu zaštitu za readonly admina, samo dodaj 'prevent.readonly' middleware u admin grupu!
+| - SVE GET rute koje želiš da frontend može koristiti bez logina, drži u javnim rutama.
+| - NIKAD ne dupliraj iste GET rute u javnim i zaštićenim grupama.
+| - Kreiranje/izmjena/birsanje treba biti samo pod admin middleware-om.
 |--------------------------------------------------------------------------
 */

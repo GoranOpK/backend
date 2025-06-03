@@ -23,18 +23,6 @@ class ReservationController extends Controller
     public function index(Request $request)
     {
         $query = Reservation::query();
-
-        if ($request->has('slot_time') && !empty($request->slot_time)) {
-            try {
-                $slotTime = Carbon::parse($request->slot_time)->format('H:i:s');
-            } catch (\Exception $e) {
-                $slotTime = $request->slot_time;
-            }
-            $query->whereHas('timeslot', function ($q) use ($slotTime) {
-                $q->where('start_time', $slotTime);
-            });
-        }
-
         $reservations = $query->get();
         return response()->json($reservations, 200);
     }
@@ -50,96 +38,38 @@ class ReservationController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'time_slot_id'      => 'required|integer|exists:list_of_time_slots,id',
-            'reservation_date'  => 'required|date',
-            'type'              => 'required|string|in:drop_off,pick_up',
-            'user_name'         => 'required|string|max:255',
-            'country'           => 'required|string|max:100',
-            'license_plate'     => 'required|string|max:20',
-            'vehicle_type_id'   => 'required|integer|exists:vehicle_types,id',
-            'email'             => 'required|email|max:255',
-            'status'            => 'sometimes|string|in:pending,confirmed,canceled',
+            'drop_off_time_slot_id' => 'required|integer|exists:list_of_time_slots,id',
+            'pick_up_time_slot_id'  => 'required|integer|exists:list_of_time_slots,id',
+            'reservation_date'      => 'required|date',
+            'user_name'             => 'required|string|max:255',
+            'country'               => 'required|string|max:100',
+            'license_plate'         => 'required|string|max:20',
+            'vehicle_type_id'       => 'required|integer|exists:vehicle_types,id',
+            'email'                 => 'required|email|max:255',
+            'status'                => 'sometimes|string|in:pending,paid',
         ]);
 
-        // Pravilo: max 3 rezervacije po tipu, danu i registarskoj oznaci
+        // Opcionalno: validacija da slotovi nisu isti, ili neki custom uslov
+
+        // Pravilo: najviše 3 rezervacije za istu tablicu i datum po slotu (primer)
         $date = $validated['reservation_date'];
         $reg = $validated['license_plate'];
-        $type = $validated['type'];
-
         $count = Reservation::where([
             ['license_plate', $reg],
             ['reservation_date', $date],
-            ['type', $type]
-        ])->count();
-
-        if ($count >= 3) {
-            return response()->json([
-                'message' => "Dozvoljeno je najviše 3 rezervacije za $type za ovu registarsku oznaku na ovaj dan."
-            ], 422);
-        }
-
-        // Pravilo: rezervacija moguća najkasnije minut prije termina
-        $slot = TimeSlot::find($validated['time_slot_id']);
-        if (!$slot) {
-            return response()->json(['message' => 'Nepostojeći termin!'], 422);
-        }
-        $dateTime = Carbon::parse($date . ' ' . $slot->start_time);
-        if (now()->diffInMinutes($dateTime, false) < 1) {
-            return response()->json([
-                'message' => 'Rezervacija je moguća najkasnije minut prije termina.'
-            ], 422);
-        }
-
-        $validated['status'] = $validated['status'] ?? 'pending';
-
-        $reservation = Reservation::create($validated);
-
-        // Slanje maila kad je rezervacija potvrđena
-        if ($reservation->status === 'confirmed') {
-            Mail::to($reservation->email)->send(new SendInvoiceToUserMail($reservation));
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Reservation created successfully',
-            'reservation' => $reservation,
-        ], 201);
-    }
-
-    // Nova API metoda za rezervaciju iz frontenda
-    public function reserve(Request $request)
-    {
-        $validated = $request->validate([
-            'time_slot_id'      => 'required|integer|exists:list_of_time_slots,id',
-            'reservation_date'  => 'required|date',
-            'type'              => 'required|string|in:drop_off,pick_up',
-            'user_name'         => 'required|string|max:255',
-            'country'           => 'required|string|max:100',
-            'license_plate'     => 'required|string|max:20',
-            'vehicle_type_id'   => 'required|integer|exists:vehicle_types,id',
-            'email'             => 'required|email|max:255',
-        ]);
-
-        // Pravilo: max 3 rezervacije po tipu, danu i registarskoj oznaci
-        $date = $validated['reservation_date'];
-        $reg = $validated['license_plate'];
-        $type = $validated['type'];
-
-        $count = Reservation::where([
-            ['license_plate', $reg],
-            ['reservation_date', $date],
-            ['type', $type]
+            ['drop_off_time_slot_id', $validated['drop_off_time_slot_id']],
+            ['pick_up_time_slot_id', $validated['pick_up_time_slot_id']]
         ])->count();
 
         if ($count >= 3) {
             return response()->json([
                 'success' => false,
-                'message' => "Dozvoljeno je najviše 3 rezervacije za $type za ovu registarsku oznaku na ovaj dan."
+                'message' => "Dozvoljeno je najviše 3 rezervacije za ovu registarsku oznaku na ovaj dan i slot."
             ], 422);
         }
 
-        // Pravilo: rezervacija moguća najkasnije minut prije termina
-        $slot = TimeSlot::find($validated['time_slot_id']);
+        // Pravilo: rezervacija moguća najkasnije minut prije termina drop-off
+        $slot = TimeSlot::find($validated['drop_off_time_slot_id']);
         if (!$slot) {
             return response()->json(['success' => false, 'message' => 'Nepostojeći termin!'], 422);
         }
@@ -151,10 +81,13 @@ class ReservationController extends Controller
             ], 422);
         }
 
-        $validated['status'] = 'pending';
+        $validated['status'] = $validated['status'] ?? 'pending';
+
         $reservation = Reservation::create($validated);
 
-        // Slanje maila možeš dodati ovde ako treba
+        if ($reservation->status === 'paid') {
+            Mail::to($reservation->email)->send(new SendInvoiceToUserMail($reservation));
+        }
 
         return response()->json([
             'success' => true,
@@ -163,7 +96,13 @@ class ReservationController extends Controller
         ], 201);
     }
 
-    // Slanje računa i potvrde mailom korisniku na osnovu ID-a rezervacije
+    // Rezervacija iz frontenda (možeš koristiti samo store, nema potrebe za duplikatom!)
+    public function reserve(Request $request)
+    {
+        // Možeš pozvati $this->store($request) ili, još bolje, koristi samo jednu metodu (store)
+        return $this->store($request);
+    }
+
     public function sendInvoiceToUser($id)
     {
         $reservation = Reservation::findOrFail($id);
@@ -176,29 +115,28 @@ class ReservationController extends Controller
         return response()->json(['success' => 'Invoice and payment confirmation sent to user email.']);
     }
 
-    // Ažuriranje postojeće rezervacije
     public function update(Request $request, $id)
     {
         $reservation = Reservation::findOrFail($id);
 
         $validated = $request->validate([
-            'time_slot_id'      => 'sometimes|required|integer|exists:list_of_time_slots,id',
-            'reservation_date'  => 'sometimes|required|date',
-            'user_name'         => 'sometimes|required|string|max:255',
-            'country'           => 'sometimes|required|string|max:100',
-            'license_plate'     => 'sometimes|required|string|max:20',
-            'vehicle_type_id'   => 'sometimes|required|integer|exists:vehicle_types,id',
-            'email'             => 'sometimes|required|email|max:255',
-            'status'            => 'sometimes|required|string|in:pending,confirmed,canceled',
-            'type'              => 'sometimes|required|string|in:drop_off,pick_up',
+            'drop_off_time_slot_id' => 'sometimes|required|integer|exists:list_of_time_slots,id',
+            'pick_up_time_slot_id'  => 'sometimes|required|integer|exists:list_of_time_slots,id',
+            'reservation_date'      => 'sometimes|required|date',
+            'user_name'             => 'sometimes|required|string|max:255',
+            'country'               => 'sometimes|required|string|max:100',
+            'license_plate'         => 'sometimes|required|string|max:20',
+            'vehicle_type_id'       => 'sometimes|required|integer|exists:vehicle_types,id',
+            'email'                 => 'sometimes|required|email|max:255',
+            'status'                => 'sometimes|required|string|in:pending,paid',
         ]);
 
         $reservation->update($validated);
 
-        // Slanje maila kad je status promijenjen u 'confirmed'
+        // Možeš dodati slanje maila kad je status promijenjen u 'paid'
         if (
             isset($validated['status']) &&
-            $validated['status'] === 'confirmed' &&
+            $validated['status'] === 'paid' &&
             $reservation->email
         ) {
             Mail::to($reservation->email)->send(new SendInvoiceToUserMail($reservation));
@@ -210,7 +148,6 @@ class ReservationController extends Controller
         ], 200);
     }
 
-    // Brisanje rezervacije
     public function destroy($id)
     {
         $reservation = Reservation::findOrFail($id);
@@ -219,7 +156,6 @@ class ReservationController extends Controller
         return response()->json(['message' => 'Reservation deleted successfully'], 200);
     }
 
-    // Prikaz rezervacija za određeni datum
     public function byDate(Request $request)
     {
         $date = $request->query('date');
@@ -232,7 +168,6 @@ class ReservationController extends Controller
         return response()->json($reservations);
     }
 
-    // Prikaz svih slotova za određeni datum
     public function showSlots(Request $request)
     {
         $date = $request->input('date', now()->toDateString());

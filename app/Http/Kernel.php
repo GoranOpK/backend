@@ -14,8 +14,8 @@ class Kernel extends HttpKernel
      * @var array<int, class-string|string>
      */
     protected $middleware = [
+        \Illuminate\Http\Middleware\HandleCors::class, // Upravljanje CORS pravilima za zahtjeve        
         \App\Http\Middleware\TrustProxies::class, // Povjerenje proxy serverima
-        \Illuminate\Http\Middleware\HandleCors::class, // Upravljanje CORS pravilima za zahtjeve
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class, // Blokiranje zahtjeva tokom režima održavanja
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class, // Validacija veličine POST podataka
         \App\Http\Middleware\TrimStrings::class, // Trimovanje praznih razmaka u stringovima
@@ -65,11 +65,12 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class, // Ograničenje broja zahtjeva
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class, // Provjera da li je email verifikovan
         'prevent.readonly' => \App\Http\Middleware\PreventReadonlyAdmin::class,
-        'custom.auth' => AuthenticateCustom::class,
+        'custom.auth' => \App\Http\Middleware\AuthenticateCustom::class,
         // Prilagođeni middleware za provjeru administratorskog pristupa:
         'admin' => \App\Http\Middleware\AuthorizeAdmin::class, // Provjera da li je korisnik administrator
 
         // Prilagođeni middleware za provjeru uloga
+        // 'admin_or_control' => \App\Http\Middleware\AuthorizeAdminOrControl::class, // ako ti zatreba
         // 'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
         // 'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
         // 'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class, // Dodato za provjeru uloga

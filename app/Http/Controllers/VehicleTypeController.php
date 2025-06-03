@@ -7,10 +7,15 @@ use Illuminate\Http\Request;
 
 class VehicleTypeController extends Controller
 {
+    public function __construct()
+    {
+        // Samo pravi admin može raditi izmjene (store, update, destroy)
+        $this->middleware(['auth:sanctum', 'admin'])->only(['store', 'update', 'destroy']);
+        // Sve ostalo (index, show) je javno dostupno (nema middleware-a)
+    }
+
     /**
      * Prikazuje sve tipove vozila.
-     *
-     * @return \Illuminate\Http\JsonResponse
      */
     public function index()
     {
@@ -19,9 +24,6 @@ class VehicleTypeController extends Controller
 
     /**
      * Prikazuje pojedinačni tip vozila na osnovu ID-a.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
      */
     public function show($id)
     {
@@ -30,9 +32,6 @@ class VehicleTypeController extends Controller
 
     /**
      * Kreira novi tip vozila.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -46,10 +45,6 @@ class VehicleTypeController extends Controller
 
     /**
      * Ažurira postojeći tip vozila.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, $id)
     {
@@ -64,9 +59,6 @@ class VehicleTypeController extends Controller
 
     /**
      * Briše tip vozila.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($id)
     {

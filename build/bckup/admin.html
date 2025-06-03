@@ -62,7 +62,7 @@
     }
 
     function fetchReservations() {
-      fetch('https://192.168.115.106:8000/api/reservations')
+      fetch('http://192.168.115.106:8000/api/reservations')
         .then(res => res.json())
         .then(data => {
           const tbody = document.getElementById('reservations-table').querySelector('tbody');
