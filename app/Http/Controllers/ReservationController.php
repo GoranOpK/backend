@@ -8,7 +8,7 @@ use App\Services\SlotService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\SendInvoiceToUserMail;
+use App\Mail\PaymentReservationConfirmationMail;
 
 class ReservationController extends Controller
 {
@@ -120,7 +120,7 @@ class ReservationController extends Controller
             return response()->json(['error' => 'Email adresa nije pronađena za ovu rezervaciju.'], 422);
         }
 
-        Mail::to($reservation->email)->send(new SendInvoiceToUserMail($reservation));
+        Mail::to($reservation->email)->send(new PaymentReservationConfirmationMail($reservation));
         return response()->json(['success' => 'Invoice and payment confirmation sent to user email.']);
     }
 
@@ -148,7 +148,7 @@ class ReservationController extends Controller
             $validated['status'] === 'paid' &&
             $reservation->email
         ) {
-            Mail::to($reservation->email)->send(new SendInvoiceToUserMail($reservation));
+            Mail::to($reservation->email)->send(new PaymentReservationConfirmationMail($reservation));
         }
 
         return response()->json([
