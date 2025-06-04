@@ -33,7 +33,7 @@ BEGIN
     END IF;
 
     -- Provera validnosti tipa vozila
-    IF NOT (vehicleTypeId = 1 OR vehicleTypeId = 2 OR vehicleTypeId = 3) THEN
+    IF NOT (vehicleTypeId = 1 OR vehicleTypeId = 2  OR vehicleTypeId = 3 OR vehicleTypeId = 4) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid vehicle type.';
     END IF;
 

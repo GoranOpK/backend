@@ -29,6 +29,6 @@ class SupportController extends Controller
 
         Mail::to('bus@kotor.me')->send(new UserSupportMail($validated));
 
-        return back()->with('success','Your message has been sent successfully! Our operators will contact you soon.');
+        return back()->with('success','Your message has been recieved successfully! Our operators will contact you soon.');
     }
 }

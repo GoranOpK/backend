@@ -7,9 +7,10 @@ return [
     | Putanje za CORS
     |--------------------------------------------------------------------------
     |
-    | Ovdje navodiš na koje rute se CORS pravila odnose.
+    | Ovdje definišeš na koje rute se CORS pravila odnose.
     | Najčešće je to 'api/*' da bi se pravila odnosila samo na API rute,
-    | a ne na cijeli sajt. 'sanctum/csrf-cookie' se koristi ako koristiš Sanctum za autentifikaciju.
+    | a ne na cijeli sajt. 'sanctum/csrf-cookie' koristiš ako koristiš Sanctum
+    | za autentifikaciju.
     */
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
@@ -18,10 +19,11 @@ return [
     | Dozvoljene HTTP metode
     |--------------------------------------------------------------------------
     |
-    | Ovdje navodiš koje HTTP metode su dozvoljene sa drugih domena (GET, POST, PUT, DELETE...).
-    | '*' znači da su sve metode dozvoljene.
+    | Ovdje navodiš koje HTTP metode su dozvoljene sa drugih domena (GET, POST, PUT, PATCH, DELETE, OPTIONS).
+    | '*' NIJE preporučeno kad koristiš supports_credentials=true.
+    | Navedi eksplicitno sve metode koje koristiš.
     */
-    'allowed_methods' => ['*'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
     /*
     |--------------------------------------------------------------------------
@@ -29,14 +31,14 @@ return [
     |--------------------------------------------------------------------------
     |
     | Ovdje navodiš sa kojih domena/portova dozvoljavaš pristup tvom API-ju.
-    | Nikada nemoj koristiti '*' u produkciji, već navedi tačno domene koje želiš da dozvoliš.
+    | Nikad ne koristi '*' u produkciji, već navedi tačno domene koje dozvoljavaš.
     | Dodaj ovdje i lokalne i mrežne adrese koje koristiš za razvoj i produkciju.
     */
     'allowed_origins' => [
-        'http://localhost:3000',            // Lokalni razvoj (React/Vue dev server)
+        'http://localhost:3000',            // Lokalni razvoj (npr. React/Vite dev server)
         'https://localhost:3000',           // Lokalni razvoj preko HTTPS-a
-        'http://192.168.115.106:3000',      // Pristup sa druge mašine preko mreže (http)
-        'https://192.168.115.106:3000',     // Pristup sa druge mašine preko mreže (https)
+        'http://192.168.115.106:3000',      // Pristup sa druge mašine u mreži (http)
+        'https://192.168.115.106:3000',     // Pristup sa druge mašine u mreži (https)
         'https://tvoj-frontend.com',        // Produkcija (zamijeni sa stvarnim domenom)
     ],
 
@@ -56,16 +58,23 @@ return [
     |--------------------------------------------------------------------------
     |
     | Ovdje navodiš koja HTTP zaglavlja frontend može slati.
-    | '*' znači da su dozvoljena sva zaglavlja.
+    | '*' NIJE preporučeno kad koristiš supports_credentials=true.
+    | Navedi tipična zaglavlja koja koristiš u aplikaciji.
     */
-    'allowed_headers' => ['*'],
+    'allowed_headers' => [
+        'Content-Type',
+        'X-Requested-With',
+        'Authorization',
+        'Accept',
+        'Origin',
+    ],
 
     /*
     |--------------------------------------------------------------------------
     | Izložena zaglavlja
     |--------------------------------------------------------------------------
     |
-    | Ovako određuješ koja zaglavlja frontend može da pročita iz odgovora.
+    | Ovdje određuješ koja zaglavlja frontend može da pročita iz odgovora.
     | Ako ti ništa specijalno ne treba, može ostati prazno.
     */
     'exposed_headers' => [],
@@ -86,7 +95,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Ako koristiš autentifikaciju/cookies između domena, ovo treba biti true.
-    | Ako ne koristiš, može na false.
+    | Ako ne koristiš, može biti false.
     */
     'supports_credentials' => true,
 

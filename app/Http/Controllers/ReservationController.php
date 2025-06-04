@@ -98,9 +98,11 @@ class ReservationController extends Controller
 
     // Rezervacija iz frontenda (možeš koristiti samo store, nema potrebe za duplikatom!)
     public function reserve(Request $request)
-    {
+     {
+       // \Log::info('Reserve metoda pozvana!');
         // Možeš pozvati $this->store($request) ili, još bolje, koristi samo jednu metodu (store)
         return $this->store($request);
+       // return response()->json(['message' => 'Radi!'], 200);
     }
 
     public function sendInvoiceToUser($id)
