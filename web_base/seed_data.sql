@@ -2,9 +2,10 @@ USE web_base;
 
 -- Ubacivanje ili ažuriranje tipova vozila
 INSERT INTO vehicle_types (description_vehicle, price) VALUES
-('8+1 mjesta (manji kombi)', 20.00),
-('9-23 mjesta (mini bus)', 40.00),
-('23+ mjesta (veliki autobus)', 50.00)
+('PERSONAL VEHICLE (4+1, 5+1, 6+1, 7+1 seats)', 15.00)
+('MINI BUS (8+1 seats)', 20.00),
+('MEDIUM BUS (9-23 seats)', 40.00),
+('BIG BUS (OVER 23 seats)', 50.00)
 ON DUPLICATE KEY UPDATE
 description_vehicle = VALUES(description_vehicle),
 price = VALUES(price);

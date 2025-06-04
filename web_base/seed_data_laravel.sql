@@ -106,7 +106,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `vehicle_types` WRITE;
 /*!40000 ALTER TABLE `vehicle_types` DISABLE KEYS */;
-INSERT INTO `vehicle_types` VALUES (1,'8+1 mjesta (manji kombi)',20.00),(2,'9-23 mjesta (mini bus)',40.00),(3,'23+ mjesta (veliki autobus)',50.00);
+INSERT INTO `vehicle_types` VALUES (1,'PERSONAL VEHICLE (4+1, 5+1, 6+1, 7+1 seats)',20.00), (2,'MINI BUS (8+1 seats)',20.00),(3,'MEDIUM BUS (9-23 seats)',40.00),(4,'BIG BUS (OVER 23 seats)',50.00);
 /*!40000 ALTER TABLE `vehicle_types` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
