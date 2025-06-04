@@ -161,17 +161,20 @@ const departureSlot = slots.find(slot => slot.time_slot.startsWith(departureTime
 
   fetch('http://192.168.115.106:8000/api/reservations/reserve', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
     body: JSON.stringify(data)
   })
-    .then(res => res.json())
-    .then(response => {
-      if (response.success) {
+  .then(res => res.json())
+  .then(response => {
+    if (response.success) {
         alert('Reservation successful!');
-      } else {
+    } else {
         alert('Reservation failed!');
-      }
-    });
+    }
+  });
 }
 
 function populateTimeSlotSelect(selectId, times) {

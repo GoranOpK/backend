@@ -97,6 +97,9 @@ Route::post('send-reservation-confirmation', [MailController::class, 'sendReserv
 Route::get('test', fn() => response()->json(['ok' => true]));
 Route::get('testjson', fn() => response()->json(['ok' => true]));
 
+// Dodaj ovde CORS test rutu:
+Route::get('cors-test', fn() => response()->json(['ok' => true]));
+
 /*
 |--------------------------------------------------------------------------
 | Dostupnost slota

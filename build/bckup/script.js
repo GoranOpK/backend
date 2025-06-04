@@ -198,7 +198,8 @@ const translations = {
     agree: "I agree to the",
     terms: "terms and conditions",
     mustAgree: "You must agree to the terms to reserve a slot.",
-    reserve: "Reserve"
+    reserve: "Reserve",
+    termsTitle: "Terms and Conditions"
   },
   mne: {
     pickDate: "Izaberite datum",
@@ -212,7 +213,8 @@ const translations = {
     agree: "Slažem se sa",
     terms: "uslovima korišćenja",
     mustAgree: "Morate prihvatiti uslove da biste rezervisali termin.",
-    reserve: "Rezerviši"
+    reserve: "Rezerviši",
+    termsTitle: "Uslovi korišćenja"
   }
 };
 
@@ -229,7 +231,8 @@ function setLanguage(lang) {
     ['agree-text', 'agree'],
     ['show-terms', 'terms'],
     ['agreement-error', 'mustAgree'],
-    ['reserve-btn', 'reserve']
+    ['reserve-btn', 'reserve'],
+    ['terms-title', 'termsTitle']
   ];
 
   ids.forEach(([id, key, attr]) => {

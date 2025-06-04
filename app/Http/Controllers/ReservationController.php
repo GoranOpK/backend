@@ -49,31 +49,30 @@ class ReservationController extends Controller
             'status'                => 'sometimes|string|in:pending,paid',
         ]);
 
-        // Opcionalno: validacija da slotovi nisu isti, ili neki custom uslov
-
-        // Pravilo: najviše 3 rezervacije za istu tablicu i datum po slotu (primer)
+        // PRAVILO 1: Najviše 3 rezervacije za istu tablicu, datum i drop-off slot
         $date = $validated['reservation_date'];
         $reg = $validated['license_plate'];
-        $count = Reservation::where([
+        $dropOffSlot = $validated['drop_off_time_slot_id'];
+
+        $count = \App\Models\Reservation::where([
             ['license_plate', $reg],
             ['reservation_date', $date],
-            ['drop_off_time_slot_id', $validated['drop_off_time_slot_id']],
-            ['pick_up_time_slot_id', $validated['pick_up_time_slot_id']]
+            ['drop_off_time_slot_id', $dropOffSlot]
         ])->count();
 
         if ($count >= 3) {
             return response()->json([
                 'success' => false,
-                'message' => "Dozvoljeno je najviše 3 rezervacije za ovu registarsku oznaku na ovaj dan i slot."
+                'message' => "Dozvoljeno je najviše 3 rezervacije za ovu registarsku oznaku, slot i dan."
             ], 422);
         }
 
-        // Pravilo: rezervacija moguća najkasnije minut prije termina drop-off
-        $slot = TimeSlot::find($validated['drop_off_time_slot_id']);
+        // PRAVILO 2: Rezervacija moguća najkasnije minut prije termina drop-off
+        $slot = \App\Models\TimeSlot::find($dropOffSlot);
         if (!$slot) {
             return response()->json(['success' => false, 'message' => 'Nepostojeći termin!'], 422);
         }
-        $dateTime = Carbon::parse($date . ' ' . $slot->start_time);
+        $dateTime = \Illuminate\Support\Carbon::parse($date . ' ' . $slot->start_time);
         if (now()->diffInMinutes($dateTime, false) < 1) {
             return response()->json([
                 'success' => false,
@@ -81,26 +80,36 @@ class ReservationController extends Controller
             ], 422);
         }
 
-        $validated['status'] = $validated['status'] ?? 'pending';
-
-        $reservation = Reservation::create($validated);
-
-        if ($reservation->status === 'paid') {
-            Mail::to($reservation->email)->send(new SendInvoiceToUserMail($reservation));
+        // Pozovi stored proceduru (ona brine o dostupnosti i ažuriranju slotova)
+        try {
+            \DB::statement('CALL AddReservation(?, ?, ?, ?, ?, ?, ?, ?)', [
+                $validated['drop_off_time_slot_id'],
+                $validated['pick_up_time_slot_id'],
+                $validated['reservation_date'],
+                $validated['user_name'],
+                $validated['country'],
+                $validated['license_plate'],
+                $validated['vehicle_type_id'],
+                $validated['email']
+            ]);
+        } catch (\Exception $e) {
+            // Vrati poruku greške iz procedure
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Reservation created successfully',
-            'reservation' => $reservation,
+            'message' => 'Reservation created successfully'
         ], 201);
     }
 
     // Rezervacija iz frontenda (možeš koristiti samo store, nema potrebe za duplikatom!)
     public function reserve(Request $request)
-    {
+     {
+       // \Log::info('Reserve metoda pozvana!');
         // Možeš pozvati $this->store($request) ili, još bolje, koristi samo jednu metodu (store)
         return $this->store($request);
+       // return response()->json(['message' => 'Radi!'], 200);
     }
 
     public function sendInvoiceToUser($id)
